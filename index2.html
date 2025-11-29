@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -11,7 +11,7 @@
 </head>
 
 <body>
-  
+
     <!-- Map container. Yandex Map instance will be rendered into this element. -->
 
     <div
@@ -267,18 +267,21 @@
     </style>
 
     <script>
-
         /**
-        * JS component that renders a Yandex Map via the Yandex Maps JavaScript API.
-        * @see https://yandex.ru/maps-api/docs/js-api/index.html
-        */
+               * JS component that renders a Yandex Map via the Yandex Maps JavaScript API.
+               * @see https://yandex.ru/maps-api/docs/js-api/index.html
+               */
 
         const YMAPS_SCRIPT_ID = "ymapsScript";
         const MAP_MARGIN = [200, 200, 200, 200];
         let ymapsLoading = null;
         let popup = null;
         let currentPopup = null;
-         const MAP_CUSTOMIZATION = 
+        let map;
+        let clusterer = null;
+        let YMapClustererClass = null;
+        let clusterByGridMethod = null;
+        const MAP_CUSTOMIZATION = 
             [
                 {
                     "tags": "country",
@@ -7274,7 +7277,7 @@
                 }
             ];
         
-        let map;
+
 
         /**
      * Global Yandex Maps configuration.
@@ -7284,7 +7287,7 @@
      */
         const YMAPS_CONFIG = {
             apikey: "042405c2-12f5-4b78-9580-cb5ea1d7c106",
-            lang: "en_US"
+            lang: "ru_RU"
         };
 
 
@@ -7304,6 +7307,22 @@
             margin: getMapMargin(),
             bounds: [[-83.8, -170.8], [83.8, 170.8]],
         };
+
+        function getMapMargin() {
+            const width = window.innerWidth || document.documentElement.clientWidth;
+
+
+            if (width <= 480) {
+                return [60, 35, 60, 35];
+            }
+
+            if (width <= 992) {
+                return [80, 80, 80, 40];
+            }
+
+            return [200, 200, 200, 200];
+        }
+
 
 
         const datGeoJson = {
@@ -7385,28 +7404,12 @@
         };
 
 
-
-    function getMapMargin() {
-            const width = window.innerWidth || document.documentElement.clientWidth;
-
-
-            if (width <= 480) {
-                return [60, 35, 60, 35];
-            }
-
-            if (width <= 992) {
-                return [80, 80, 80, 40];
-            }
-
-            return [200, 200, 200, 200];
-        }
-
-        function createMarkerTemplate(properties = {}) {
+        function buildMarkerTemplate(properties = {}) {
             const template = document.getElementById("marker-template");
 
             if (template && template.content && template.content.firstElementChild) {
                 const element = template.content.firstElementChild.cloneNode(true);
-                element.title = properties.org || "";
+                element.title = properties.city || properties.org || "";
                 return element;
             }
 
@@ -7421,55 +7424,140 @@
             return element;
         }
 
-        function buildMarker(properties = {}) {
-            const element = createMarkerTemplate(properties);
-            return element;
+
+        function isValidFeatureCollection(geoJson) {
+            return (
+                geoJson &&
+                geoJson.type === "FeatureCollection" &&
+                Array.isArray(geoJson.features)
+            );
         }
 
-        function buildFeature(data) {
-            const { coords, element, properties } = data || {};
-            return new ymaps3.YMapFeature({
-                geometry: {
-                    type: "Point",
-                    coordinates: coords
-                },
-                properties,
-                style: {
-                    element
-                }
-            });
-        }
 
-        function addGeoJsonFeatures(geoJson) {
-            if (!geoJson || geoJson.type !== "FeatureCollection" || !Array.isArray(geoJson.features)) {
-                console.warn("Invalid GeoJSON", geoJson);
-                return;
-            }
-
-            geoJson.features
+        function toPointFeatures(geoJson) {
+            return geoJson.features
                 .filter((feature) =>
                     feature &&
                     feature.geometry &&
                     feature.geometry.type === "Point" &&
                     Array.isArray(feature.geometry.coordinates)
                 )
-                .forEach((feature, index) => {
+                .map((feature, index) => {
                     const coords = feature.geometry.coordinates;
                     const properties = feature.properties || {};
 
-                    const element = buildMarker(properties);
-                    const pointFeature = buildFeature({ coords, element, properties });
-
-                    map.addChild(pointFeature);
-
-                    element.addEventListener("click", () => onMarkerClick(properties, element, coords));
+                    return {
+                        type: "Feature",
+                        id: properties.id != null ? properties.id : `f-${index}`,
+                        geometry: {
+                            type: "Point",
+                            coordinates: coords
+                        },
+                        properties: {
+                            ...properties,
+                        }
+                    };
                 });
+        }
+
+        function buildFeatureMarker(feature) {
+            const props = feature.properties || {};
+            const coords = feature.geometry.coordinates;
+
+            const element = buildMarkerTemplate(props);
+
+            element.addEventListener("click", () =>
+                onMarkerClick(props, element, coords)
+            );
+            return new ymaps3.YMapMarker(
+                {
+                    coordinates: coords
+                },
+                element
+            );
+        }
+
+        function createClusterElement(clusterFeatures) {
+            const clusterElement = document.createElement("div");
+            clusterElement.className = "marker cluster-marker";
+
+            const content = document.createElement("div");
+            content.className = "marker__content cluster-marker__content";
+            content.textContent = String(clusterFeatures.length);
+
+            clusterElement.appendChild(content);
+
+            return clusterElement;
+        }
+
+        function buildCluster(coordinates, clusterFeatures) {
+            const clusterElement = createClusterElement(clusterFeatures);
+
+            const onClusterClick = () => {
+                if (!map) return;
+
+                const featureCollection = {
+                    type: "FeatureCollection",
+                    features: clusterFeatures
+                };
+
+                const bounds = getBounds(featureCollection);
+                if (!bounds) return;
+
+                map.update({
+                    location: {
+                        bounds,
+                        duration: 400,
+                        easing: "ease-in-out"
+                    }
+                });
+            };
+
+            return new ymaps3.YMapMarker(
+                {
+                    coordinates,
+                    onClick: onClusterClick
+                },
+                clusterElement
+            );
+        }
+
+        function createClusterer(features) {
+            return new YMapClustererClass({
+                method: clusterByGridMethod({ gridSize: 200 }),
+                features,
+                marker: buildFeatureMarker,
+                cluster: buildCluster
+            });
+        }
+
+
+        function addGeoJsonFeatures(geoJson) {
+            if (!isValidFeatureCollection(geoJson)) {
+                console.warn("Invalid GeoJSON", geoJson);
+                return;
+            }
+
+            if (!YMapClustererClass || !clusterByGridMethod || !map) {
+                console.warn("Clusterer is not ready");
+                return;
+            }
+
+            const features = toPointFeatures(geoJson);
+            if (!features.length) return;
+
+            if (!clusterer) {
+                clusterer = createClusterer(features);
+                map.addChild(clusterer);
+            } else {
+                clusterer.update({ features });
+            }
         }
 
         const normalizePhone = (phone) =>
             typeof phone === "string" ? phone.replace(/[^\d+]/g, "") : phone || "";
 
-      const buildPopupTemplate = (props = {}) => {
+        const buildPopupTemplate = (props = {}) => {
             const tpl = document.getElementById("popup-template");
             const node = tpl.content.cloneNode(true);
 
@@ -7542,7 +7630,7 @@
             onOpenPopup(properties, coords);
         }
 
-        const getGeoJsonBounds = (geoJson) => {
+        const getBounds = (geoJson) => {
             const coords = geoJson?.features
                 ?.map((f) => f?.geometry?.coordinates)
                 ?.filter((c) => Array.isArray(c) && c.length === 2)
@@ -7581,18 +7669,23 @@
 
         async function onInitMaps() {
             const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapControls } = ymaps3;
-           const { YMapPopupMarker, YMapZoomControl, YMapGeolocationControl } = await ymaps3.import('@yandex/ymaps3-default-ui-theme');
+            const { YMapPopupMarker, YMapZoomControl, YMapGeolocationControl } = await ymaps3.import('@yandex/ymaps3-default-ui-theme');
             popup = YMapPopupMarker;
+
+
+            const { YMapClusterer, clusterByGrid } = await ymaps3.import('@yandex/ymaps3-clusterer');
+            YMapClustererClass = YMapClusterer;
+            clusterByGridMethod = clusterByGrid;
 
             const container = document.getElementById("maps");
 
             map = new YMap(container, mapOptions);
 
-           
             map.addChild(new YMapDefaultSchemeLayer({
                 customization: MAP_CUSTOMIZATION
             }));
             map.addChild(new YMapDefaultFeaturesLayer());
+
 
             const rightControls = new YMapControls({ position: 'right' });
             const GEOLOCATION_OPTIONS = {
@@ -7604,17 +7697,17 @@
                 .addChild(new YMapZoomControl({}))
                 .addChild(new YMapGeolocationControl(GEOLOCATION_OPTIONS));
 
-                   map.addChild(rightControls);
+
+            map.addChild(rightControls);
 
             addGeoJsonFeatures(datGeoJson);
-
-            fitBounds(getGeoJsonBounds(datGeoJson));
-             watchForZoomChanges();
+            watchForZoomChanges();
+            fitBounds(getBounds(datGeoJson));
 
         }
 
 
-          function watchForZoomChanges() {
+        function watchForZoomChanges() {
             if (!map || !ymaps3?.YMapListener) return;
 
             let lastZoom = map.zoom ?? null;
@@ -7686,7 +7779,10 @@
                 .then(() => (
                     ymaps3.import.registerCdn(
                         'https://cdn.jsdelivr.net/npm/{package}',
-                        ['@yandex/ymaps3-default-ui-theme@latest']
+                        [
+                            '@yandex/ymaps3-default-ui-theme@latest',
+                            '@yandex/ymaps3-clusterer@0.0'
+                        ]
                     ),
                     onInitMaps()
                 ))
@@ -7695,5 +7791,6 @@
         document.addEventListener("DOMContentLoaded", onReady);
 
     </script>
-    </body>
-    </html>
+</body>
+
+</html>
