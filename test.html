@@ -1,0 +1,434 @@
+ <script>
+
+        /**
+        * JS component that renders a Yandex Map via the Yandex Maps JavaScript API.
+        * @see https://yandex.ru/maps-api/docs/js-api/index.html
+        */
+
+        const YMAPS_SCRIPT_ID = "ymapsScript";
+        const MAP_MARGIN = [200, 200, 200, 200];
+        let ymapsLoading = null;
+        let popup = null;
+        let currentPopup = null;
+         const MAP_CUSTOMIZATION = []
+        let map;
+
+        /**
+     * Global Yandex Maps configuration.
+     *
+     * Note: these parameters cannot be set or changed after the map is initialized.
+     * @see https://yandex.ru/maps-api/docs/js-api/map/localization.html
+     */
+        const YMAPS_CONFIG = {
+            apikey: "042405c2-12f5-4b78-9580-cb5ea1d7c106",
+            lang: "ru_RU"
+        };
+
+
+        /**
+         * Initial map options.
+         *
+         * @see https://yandex.ru/maps-api/docs/js-api/map/YMap.html
+         */
+        const mapOptions = {
+            location: {
+                center: [37.618423, 55.751244],
+                zoom: 4
+            },
+            mode: "vector",
+            theme: "light",
+            zoomRange: { min: 3, max: 22 },
+            margin: getMapMargin(),
+            bounds: [[-83.8, -170.8], [83.8, 170.8]],
+        };
+
+
+        const datGeoJson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    type: "Feature",
+                    properties: {
+                        id: 1,
+                        citySource: "Нижний Новгород",
+                        addressSource: "Рязанская область, Рязанский район, п. Искра",
+                        org: " АО «Рязанский свинокомплекс»",
+                        country: "Россия",
+                        countryCode: "RU",
+                        region: "Рязанская область",
+                        city: "п. Искра",
+                        street: "",
+                        house: "",
+                        postalCode: "",
+                        fullAddress: "Рязанская область, Рязанский район, п. Искра"
+
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: [
+                            39.891999, 54.445544
+                        ]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: {
+                        id: 2,
+                        citySource: "с. Горелое",
+                        addressSource: "Тамбовская область, Тамбовский р-н., с. Горелое",
+                        org: "АО «Агрокомплекс «Тамбовский»",
+                        country: "Россия",
+                        countryCode: "RU",
+                        region: "Тамбовская область",
+                        city: " с. Горелое",
+                        street: "",
+                        house: "",
+                        postalCode: "",
+                        fullAddress: "Тамбовская область, Тамбовский р-н., с. Горелое"
+
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: [
+                            41.497935, 52.920688
+                        ]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: {
+                        id: 3,
+                        citySource: "",
+                        addressSource: "Смоленская область, Гагаринский р-н.",
+                        org: "ЗАО «Агропромышленная фирма «Наша житница»",
+                        country: "Россия",
+                        countryCode: "RU",
+                        region: "Нижегородская область",
+                        city: "",
+                        street: "",
+                        house: "",
+                        postalCode: "",
+                        fullAddress: "Смоленская область, Гагаринский р-н."
+
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: [
+                            34.986739, 55.610372
+                        ]
+                    }
+                },
+            ]
+        };
+
+
+
+    function getMapMargin() {
+            const width = window.innerWidth || document.documentElement.clientWidth;
+
+
+            if (width <= 480) {
+                return [60, 35, 60, 35];
+            }
+
+            if (width <= 992) {
+                return [80, 80, 80, 40];
+            }
+
+            return [200, 200, 200, 200];
+        }
+
+        function createMarkerTemplate(properties = {}) {
+            const template = document.getElementById("marker-template");
+
+            if (template && template.content && template.content.firstElementChild) {
+                const element = template.content.firstElementChild.cloneNode(true);
+                element.title = properties.org || "";
+                return element;
+            }
+
+            const element = document.createElement("div");
+            element.className = "marker";
+            element.title = properties.city || properties.org || "";
+
+            const bg = document.createElement("div");
+            bg.className = "marker__content";
+            element.appendChild(bg);
+
+            return element;
+        }
+
+        function buildMarker(properties = {}) {
+            const element = createMarkerTemplate(properties);
+            return element;
+        }
+
+        function buildFeature(data) {
+            const { coords, element, properties } = data || {};
+            return new ymaps3.YMapFeature({
+                geometry: {
+                    type: "Point",
+                    coordinates: coords
+                },
+                properties,
+                style: {
+                    element
+                }
+            });
+        }
+
+        function addGeoJsonFeatures(geoJson) {
+            if (!geoJson || geoJson.type !== "FeatureCollection" || !Array.isArray(geoJson.features)) {
+                console.warn("Invalid GeoJSON", geoJson);
+                return;
+            }
+
+            geoJson.features
+                .filter((feature) =>
+                    feature &&
+                    feature.geometry &&
+                    feature.geometry.type === "Point" &&
+                    Array.isArray(feature.geometry.coordinates)
+                )
+                .forEach((feature, index) => {
+                    const coords = feature.geometry.coordinates;
+                    const properties = feature.properties || {};
+
+                    const element = buildMarker(properties);
+                    const pointFeature = buildFeature({ coords, element, properties });
+
+                    map.addChild(pointFeature);
+
+                    element.addEventListener("click", () => onMarkerClick(properties, element, coords));
+                });
+        }
+
+        const normalizePhone = (phone) =>
+            typeof phone === "string" ? phone.replace(/[^\d+]/g, "") : phone || "";
+
+      const buildPopupTemplate = (props = {}) => {
+            const tpl = document.getElementById("popup-template");
+            const node = tpl.content.cloneNode(true);
+
+            const { citySource, addressSource,org } = props;
+            const title = org || " ";
+
+            node.querySelector(".marker__popup-title").textContent = title;
+
+            if (addressSource) {
+                const el = node.querySelector(".popup-address");
+                el.hidden = false;
+                el.querySelector(".popup-address-value").textContent = addressSource;
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.appendChild(node);
+
+            return wrapper.innerHTML.trim();
+        };
+
+
+        function buildPopupContent(properties = {}) {
+            const contentEl = document.createElement("div");
+            contentEl.className = "marker__popup-content";
+            contentEl.innerHTML = buildPopupTemplate(properties);
+
+            const closeBtn = contentEl.querySelector(".marker__popup-close");
+            closeBtn.addEventListener("click", () => onClosePopup());
+
+            return contentEl;
+        }
+
+        function onClosePopup() {
+            if (currentPopup && map) {
+                map.removeChild(currentPopup);
+                currentPopup = null;
+            }
+        }
+
+        function onOpenPopup(properties = {}, coords) {
+            if (!coords || !Array.isArray(coords)) return;
+            if (!popup || !map) return;
+
+            onClosePopup();
+
+            currentPopup = new popup({
+                coordinates: coords,
+                draggable: false,
+                offset: 55,
+                show: true,
+                content: () => buildPopupContent(properties)
+            });
+
+            map.addChild(currentPopup);
+        }
+
+        function onMarkerClick(properties = {}, markerElement, coords) {
+            const { city, org, fullAddress, email, phone, url } = properties;
+            const data = [
+                city,
+                org,
+                fullAddress,
+                email ? `Email: ${email}` : null,
+                phone ? `Тел: ${phone}` : null,
+                url ? `URL: ${url}` : null,
+            ].filter(Boolean);
+
+            if (!data.length) return;
+
+            onOpenPopup(properties, coords);
+        }
+
+        const getGeoJsonBounds = (geoJson) => {
+            const coords = geoJson?.features
+                ?.map((f) => f?.geometry?.coordinates)
+                ?.filter((c) => Array.isArray(c) && c.length === 2)
+                ?.filter(([lng, lat]) => Number.isFinite(lng) && Number.isFinite(lat));
+
+            if (!coords?.length) return null;
+
+
+            const [minLng, maxLng, minLat, maxLat] = coords.reduce(
+                ([minLng, maxLng, minLat, maxLat], [lng, lat]) => [
+                    minLng === null || lng < minLng ? lng : minLng,
+                    maxLng === null || lng > maxLng ? lng : maxLng,
+                    minLat === null || lat < minLat ? lat : minLat,
+                    maxLat === null || lat > maxLat ? lat : maxLat
+                ],
+                [null, null, null, null]
+            );
+
+            return [
+                [minLng, minLat],
+                [maxLng, maxLat]
+            ];
+        };
+
+        const fitBounds = (bounds, duration = 400) => {
+            if (!bounds) return;
+
+            map.update({
+                location: {
+                    bounds,
+                    easing: 'ease-in-out',
+                    duration
+                }
+            });
+        };
+
+        async function onInitMaps() {
+            const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapControls } = ymaps3;
+           const { YMapPopupMarker, YMapZoomControl, YMapGeolocationControl } = await ymaps3.import('@yandex/ymaps3-default-ui-theme');
+            popup = YMapPopupMarker;
+
+            const container = document.getElementById("maps");
+
+            map = new YMap(container, mapOptions);
+
+           
+            map.addChild(new YMapDefaultSchemeLayer({
+                customization: MAP_CUSTOMIZATION
+            }));
+            map.addChild(new YMapDefaultFeaturesLayer());
+
+            const rightControls = new YMapControls({ position: 'right' });
+            const GEOLOCATION_OPTIONS = {
+                positionOptions: { enableHighAccuracy: true },
+                flyTo: true
+            };
+
+            rightControls
+                .addChild(new YMapZoomControl({}))
+                .addChild(new YMapGeolocationControl(GEOLOCATION_OPTIONS));
+
+                   map.addChild(rightControls);
+
+            addGeoJsonFeatures(datGeoJson);
+
+            fitBounds(getGeoJsonBounds(datGeoJson));
+             watchForZoomChanges();
+
+        }
+
+
+          function watchForZoomChanges() {
+            if (!map || !ymaps3?.YMapListener) return;
+
+            let lastZoom = map.zoom ?? null;
+            const listener = new ymaps3.YMapListener({
+                onUpdate: ({ location }) => {
+                    const zoom = location?.zoom;
+                    if (zoom === lastZoom) return;
+                    lastZoom = zoom;
+                    onClosePopup();
+                }
+            });
+
+            map.addChild(listener);
+        }
+
+        const buildYMapsSrc = (config = {}) => {
+            const { enterprise = false, version = "v3", ...params } = config;
+            const query = Object.entries(params)
+                .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                .join("&");
+
+            return `https://${enterprise ? "enterprise." : ""}api-maps.yandex.ru/${version}/?${query}`;
+        };
+
+        const createYMapsScript = (src) => {
+            const script = document.createElement("script");
+            script.id = YMAPS_SCRIPT_ID;
+            script.async = true;
+            script.defer = true;
+            script.src = src;
+            return script;
+        };
+
+        const ensureReady = () =>
+            window.ymaps3?.ready
+                ? window.ymaps3.ready.then(() => window.ymaps3)
+                : Promise.resolve(window.ymaps3);
+
+        const loadYMaps = (config = {}) => {
+            if (window.ymaps3?.ready) return Promise.resolve(window.ymaps3);
+            if (ymapsLoading) return ymapsLoading;
+
+            const handleLoad = (resolve) => () => ensureReady().then(resolve);
+
+            const existing = document.getElementById(YMAPS_SCRIPT_ID);
+            if (existing) {
+                ymapsLoading = new Promise((resolve, reject) => {
+                    existing.addEventListener("load", handleLoad(resolve), { once: true });
+                    existing.addEventListener("error", reject, { once: true });
+                });
+                return ymapsLoading;
+            }
+
+            const script = createYMapsScript(buildYMapsSrc(config));
+
+            ymapsLoading = new Promise((resolve, reject) => {
+                script.addEventListener("load", handleLoad(resolve), { once: true });
+                script.addEventListener("error", reject, { once: true });
+            });
+
+            document.head.appendChild(script);
+
+            return ymapsLoading;
+        };
+
+        const onReady = () =>
+            loadYMaps(YMAPS_CONFIG)
+                .then(() => ymaps3.ready)
+                .then(() => (
+                    ymaps3.import.registerCdn(
+                        'https://cdn.jsdelivr.net/npm/{package}',
+                        ['@yandex/ymaps3-default-ui-theme@latest']
+                    ),
+                    onInitMaps()
+                ))
+                .catch(err => console.error("Error maps:", err));
+
+        document.addEventListener("DOMContentLoaded", onReady);
+
+    </script>
