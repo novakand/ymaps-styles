@@ -426,7 +426,6 @@
         return;
     }
 
-    // локальные хелперы (без внешних зависимостей)
     function sanitizeLon(lon) {
         if (lon === 180) return 179.999999;
         if (lon === -180) return -179.999999;
@@ -461,7 +460,6 @@
         const geomType = feature.geometry.type;
         const props = feature.properties || {};
 
-        // POINT — как раньше (не ломаем)
         if (geomType === "Point") {
             const coords = feature.geometry.coordinates;
             if (!Array.isArray(coords)) return;
@@ -472,17 +470,13 @@
             return;
         }
 
-        // POLYGON / MULTIPOLYGON: используем turf для предобработки и "вытаскивания" валидных полигонов
         try {
-            // превратим любую фичу в набор полигонов (Polygon features)
             const fc = turf.flatten(feature);
             if (!fc || !Array.isArray(fc.features)) return;
 
             fc.features.forEach(polyFeat => {
-                // убедимся в порядке вершин / замыкании
                 let safe = turf.rewind(polyFeat, { reverse: false });
 
-                // unkink — разобьёт само-пересекающиеся фигуры на "чистые" полигоны
                 let parts = null;
                 try {
                     parts = turf.unkinkPolygon(safe);
@@ -492,15 +486,12 @@
 
                 const handlePart = (part) => {
                     if (!part || !part.geometry || part.geometry.type !== "Polygon") return;
-                    // coords: array of rings
                     const rawCoords = part.geometry.coordinates || [];
                     const safeCoords = rawCoords.map(ring => ensureRingClosed(fixLonContinuityForRing(ring)));
 
-                    // создаём YMapFeature
                     const polyY = buildPolygonFeature({ coords: safeCoords, properties: props });
                     map.addChild(polyY);
 
-                    // навешиваем клик (если поддерживается)
                     try {
                         if (polyY.events && typeof polyY.events.add === "function") {
                             polyY.events.add("click", () => {
@@ -513,7 +504,7 @@
                                 if (centroid) onOpenPopup(props, centroid);
                             });
                         }
-                    } catch (e) { /* noop */ }
+                    } catch (e) {  }
                 };
 
                 if (parts && parts.type === "FeatureCollection" && Array.isArray(parts.features) && parts.features.length) {
@@ -525,7 +516,6 @@
             });
         } catch (err) {
             console.warn("turf processing failed for feature", err);
-            // fallback: игнорируем или можно попытаться создать полигоны "как есть"
         }
     });
 }
@@ -537,9 +527,7 @@
     return Number(a[0]) === Number(b[0]) && Number(a[1]) === Number(b[1]);
 }
 
-/**
- * Приводит длинну числа к в диапазон (-180,180]
- */
+
 function normalizeLonTo180(lon) {
     let L = Number(lon);
     while (L <= -180) L += 360;
@@ -547,15 +535,8 @@ function normalizeLonTo180(lon) {
     return L;
 }
 
-/**
- * Делает "unwrap" длин для массива точек, чтобы не было резкого перехода через ±180.
- * Логика: вычисляем среднюю долготу (в виде вектора), и смещаем каждую точку так,
- * чтобы она была в радиусе ±180 от усреднённой/референсной долготы.
- */
 function unwrapLongitudes(ring) {
     if (!Array.isArray(ring) || ring.length === 0) return ring;
-
-    // вычисляем "комплексную" среднюю долготу через синус/косинус, чтобы правильно усреднять круговые координаты
     let sumX = 0, sumY = 0;
     ring.forEach(([lon]) => {
         const rad = (Number(lon) || 0) * Math.PI / 180;
@@ -563,55 +544,33 @@ function unwrapLongitudes(ring) {
         sumY += Math.sin(rad);
     });
     const avgRad = Math.atan2(sumY, sumX);
-    let avgLon = avgRad * 180 / Math.PI; // средняя долгота
+    let avgLon = avgRad * 180 / Math.PI; 
 
-    // скорректируем каждую долготу так, чтобы она была в интервале (avgLon-180, avgLon+180)
     return ring.map(([lon, lat]) => {
         let L = Number(lon);
-        // смещаем L чтобы |L - avgLon| <= 180
         while (L - avgLon > 180) L -= 360;
         while (L - avgLon <= -180) L += 360;
         return [L, Number(lat)];
     });
 }
 
-/**
- * Убедиться, что ring замкнут: если первый != последний — добавить копию первого в конец.
- */
+
 function ensureRingClosed(ring) {
     if (!Array.isArray(ring) || ring.length === 0) return ring;
     const first = ring[0];
     const last = ring[ring.length - 1];
     if (!equalPoint(first, last)) {
-        // добавляем копию первого
         return [...ring, [Number(first[0]), Number(first[1])]];
     }
     return ring;
 }
 
-/**
- * Нормализует коорд-структуру polygonCoords (формат GeoJSON Polygon: [ ring1, ring2, ... ])
- * - unwrap длин по медиане полигона (чтобы избежать пересечения через антимеридиан)
- * - гарантирует замыкание колец
- *
- * Возвращает новую структуру coordinates, безопасную для передачи в YMapFeature.
- */
 function normalizePolygonCoords(polygonCoords) {
     if (!Array.isArray(polygonCoords)) return polygonCoords;
-
-    // Сначала: применим unwrap к каждому ring (используем внешнее кольцо для определения средней долготы)
     const outer = polygonCoords[0] || [];
     if (outer.length === 0) return polygonCoords;
-
-    // unwrap по внешнему кольцу — получим корректную систему долгот для всего полигона
     const unwrappedOuter = unwrapLongitudes(outer);
 
-    // вычислим смещение, которое мы применили: разница между averageBefore и averageAfter нет нужды —
-    // unwrapLongitudes уже вернул скорректированные долготые значения. Чтобы сохранить согласованность,
-    // применим аналогичное смещение ко всем внутренним кольцам (на основе внешнего кольца).
-    // Но проще: вычислим "базовую" среднюю долготу из unwrappedOuter и для каждого кольца приведём его точки
-    // к близкому диапазону относительно этой средней долготы.
-    // Вычислим базовую среднюю.
     let sumX = 0, sumY = 0;
     unwrappedOuter.forEach(([lon]) => {
         const rad = (Number(lon) || 0) * Math.PI / 180;
@@ -620,7 +579,6 @@ function normalizePolygonCoords(polygonCoords) {
     });
     const baseAvgLon = (Math.atan2(sumY, sumX) * 180 / Math.PI) || 0;
 
-    // вспомогательная функция приведения долгот кольца к baseAvgLon
     const adjustRingToBase = (ring) => {
         return ring.map(([lon, lat]) => {
             let L = Number(lon);
@@ -630,7 +588,6 @@ function normalizePolygonCoords(polygonCoords) {
         });
     };
 
-    // теперь создаём новый массив колец: сначала внешний (уже unwrapped), затем внутренние скорректированные и закрытые
     const normalized = [];
     normalized.push(ensureRingClosed(unwrappedOuter.map(([lon, lat]) => [Number(lon), Number(lat)])));
 
@@ -640,28 +597,12 @@ function normalizePolygonCoords(polygonCoords) {
         normalized.push(ensureRingClosed(adj.map(([lon, lat]) => [Number(lon), Number(lat)])));
     }
 
-    // В конце — при желании привести долготы в диапазон [-180,180] для совместимости с другими частями кода:
     const final = normalized.map(ring => ring.map(([lon, lat]) => [normalizeLonTo180(lon), lat]));
 
     return final;
 }
 
-/**
- * Дополнительный helper: нормализует coords для POLYGON или MULTIPOLYGON.
- * - Если передан Polygon (array of rings) — нормализует один polygon.
- * - Если передан MultiPolygon (array of polygons) — нормализует каждый polygon.
- */
-function normalizeCoordsForFeature(type, coords) {
-    if (!coords) return coords;
-    if (type === "Polygon") {
-        return normalizePolygonCoords(coords);
-    }
-    if (type === "MultiPolygon") {
-        // coords = [ polygon1Coords, polygon2Coords, ... ]
-        return coords.map(polygonCoords => normalizePolygonCoords(polygonCoords));
-    }
-    return coords;
-}
+
 
         function buildPolygonFeature({ type = "Polygon", coords, properties = {}, styleOptions = {} } = {}) {
             const defaultStyle = {
