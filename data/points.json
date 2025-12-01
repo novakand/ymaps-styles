@@ -7,7 +7,7 @@
                         "id": 1,
                         "name": " АО «Рязанский свинокомплекс»",
                          "fullAddress": "Рязанская область, Рязанский район, п. Искра",
-                           "iconUrl": "/assets/icons/point.svg"
+                           "iconUrl": "assets/icons/point.svg"
 
                     },
                     "geometry": {
@@ -23,7 +23,7 @@
                         "id": 2,
                         "name": "АО «Агрокомплекс «Тамбовский»",
                         "fullAddress": "Тамбовская область, Тамбовский р-н., с. Горелое",
-                          "iconUrl": "/assets/icons/point.svg"
+                          "iconUrl": "assets/icons/point.svg"
 
                     },
                     "geometry": {
@@ -39,7 +39,7 @@
                         "id": 3,
                         "name": "ЗАО «Агропромышленная фирма «Наша житница»",
                         "fullAddress": "Смоленская область, Гагаринский р-н.",
-                         "iconUrl": "/assets/icons/point.svg"
+                         "iconUrl": "assets/icons/point.svg"
 
                     },
                     "geometry": {

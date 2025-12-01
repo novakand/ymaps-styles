@@ -6,7 +6,7 @@
       "properties": {
         "id": 1,
         "name": "Рязанская область",
-        "iconUrl": "/assets/icons/62.svg"
+        "iconUrl": "assets/icons/62.svg"
       },
       "geometry": {
         "type": "Point",
@@ -18,7 +18,7 @@
       "properties": {
         "id": 2,
         "name": "Смоленская область",
-       "iconUrl": "/assets/icons/67.svg"
+       "iconUrl": "assets/icons/67.svg"
       },
       "geometry": {
         "type": "Point",
@@ -30,7 +30,7 @@
       "properties": {
         "id": 3,
         "name": "Тамбовская область",
-       "iconUrl": "/assets/icons/68.svg"
+       "iconUrl": "assets/icons/68.svg"
       },
       "geometry": {
         "type": "Point",
