@@ -1,0 +1,597 @@
+[
+  {
+    "file": "22.geojson",
+    "region": "Алтайский край",
+    "code": "22",
+    "matchedTo": "Алтайский край",
+    "originalIndex": 0
+  },
+  {
+    "file": "28.geojson",
+    "region": "Амурская обл.",
+    "code": "28",
+    "matchedTo": "Амурская область",
+    "originalIndex": 1
+  },
+  {
+    "file": "29.geojson",
+    "region": "Архангельская обл.",
+    "code": "29",
+    "matchedTo": "Архангельская область",
+    "originalIndex": 2
+  },
+  {
+    "file": "30.geojson",
+    "region": "Астраханская обл.",
+    "code": "30",
+    "matchedTo": "Астраханская область",
+    "originalIndex": 3
+  },
+  {
+    "file": "31.geojson",
+    "region": "Белгородская обл.",
+    "code": "31",
+    "matchedTo": "Белгородская область",
+    "originalIndex": 4
+  },
+  {
+    "file": "32.geojson",
+    "region": "Брянская обл.",
+    "code": "32",
+    "matchedTo": "Брянская область",
+    "originalIndex": 5
+  },
+  {
+    "file": "33.geojson",
+    "region": "Владимирская обл.",
+    "code": "33",
+    "matchedTo": "Владимирская область",
+    "originalIndex": 6
+  },
+  {
+    "file": "34.geojson",
+    "region": "Волгоградская обл.",
+    "code": "34",
+    "matchedTo": "Волгоградская область",
+    "originalIndex": 7
+  },
+  {
+    "file": "35.geojson",
+    "region": "Вологодская обл.",
+    "code": "35",
+    "matchedTo": "Вологодская область",
+    "originalIndex": 8
+  },
+  {
+    "file": "36.geojson",
+    "region": "Воронежская обл.",
+    "code": "36",
+    "matchedTo": "Воронежская область",
+    "originalIndex": 9
+  },
+  {
+    "file": "79.geojson",
+    "region": "Еврейская АО",
+    "code": "79",
+    "matchedTo": "Еврейская автономная область",
+    "originalIndex": 10
+  },
+  {
+    "file": "75.geojson",
+    "region": "Забайкальский край",
+    "code": "75",
+    "matchedTo": "Забайкальский край",
+    "originalIndex": 11
+  },
+  {
+    "file": "37.geojson",
+    "region": "Ивановская обл.",
+    "code": "37",
+    "matchedTo": "Ивановская область",
+    "originalIndex": 12
+  },
+  {
+    "file": "38.geojson",
+    "region": "Иркутская обл.",
+    "code": "38",
+    "matchedTo": "Иркутская область",
+    "originalIndex": 13
+  },
+  {
+    "file": "07.geojson",
+    "region": "Кабардино-Балкарская Республика",
+    "code": "07",
+    "matchedTo": "Кабардино-Балкарская Республика",
+    "originalIndex": 14
+  },
+  {
+    "file": "39.geojson",
+    "region": "Калининградская обл.",
+    "code": "39",
+    "matchedTo": "Калининградская область",
+    "originalIndex": 15
+  },
+  {
+    "file": "40.geojson",
+    "region": "Калужская обл.",
+    "code": "40",
+    "matchedTo": "Калужская область",
+    "originalIndex": 16
+  },
+  {
+    "file": "41.geojson",
+    "region": "Камчатский край",
+    "code": "41",
+    "matchedTo": "Камчатский край",
+    "originalIndex": 17
+  },
+  {
+    "file": "09.geojson",
+    "region": "Карачаево-Черкесская Республика",
+    "code": "09",
+    "matchedTo": "Карачаево-Черкесская Республика",
+    "originalIndex": 18
+  },
+  {
+    "file": "42.geojson",
+    "region": "Кемеровская обл. - Кузбасс",
+    "code": "42",
+    "matchedTo": "Кемеровская область",
+    "originalIndex": 19
+  },
+  {
+    "file": "43.geojson",
+    "region": "Кировская обл.",
+    "code": "43",
+    "matchedTo": "Кировская область",
+    "originalIndex": 20
+  },
+  {
+    "file": "44.geojson",
+    "region": "Костромская обл.",
+    "code": "44",
+    "matchedTo": "Костромская область",
+    "originalIndex": 21
+  },
+  {
+    "file": "23.geojson",
+    "region": "Краснодарский край",
+    "code": "23",
+    "matchedTo": "Краснодарский край",
+    "originalIndex": 22
+  },
+  {
+    "file": "24.geojson",
+    "region": "Красноярский край",
+    "code": "24",
+    "matchedTo": "Красноярский край",
+    "originalIndex": 23
+  },
+  {
+    "file": "45.geojson",
+    "region": "Курганская обл.",
+    "code": "45",
+    "matchedTo": "Курганская область",
+    "originalIndex": 24
+  },
+  {
+    "file": "46.geojson",
+    "region": "Курская обл.",
+    "code": "46",
+    "matchedTo": "Курская область",
+    "originalIndex": 25
+  },
+  {
+    "file": "47.geojson",
+    "region": "Ленинградская обл.",
+    "code": "47",
+    "matchedTo": "Ленинградская область",
+    "originalIndex": 26
+  },
+  {
+    "file": "48.geojson",
+    "region": "Липецкая обл.",
+    "code": "48",
+    "matchedTo": "Липецкая область",
+    "originalIndex": 27
+  },
+  {
+    "file": "49.geojson",
+    "region": "Магаданская обл.",
+    "code": "49",
+    "matchedTo": "Магаданская область",
+    "originalIndex": 28
+  },
+  {
+    "file": "50.geojson",
+    "region": "Московская обл.",
+    "code": "50",
+    "matchedTo": "Московская область",
+    "originalIndex": 29
+  },
+  {
+    "file": "51.geojson",
+    "region": "Мурманская обл.",
+    "code": "51",
+    "matchedTo": "Мурманская область",
+    "originalIndex": 30
+  },
+  {
+    "file": "83.geojson",
+    "region": "Ненецкий АО",
+    "code": "83",
+    "matchedTo": "Ненецкий автономный округ",
+    "originalIndex": 31
+  },
+  {
+    "file": "52.geojson",
+    "region": "Нижегородская обл.",
+    "code": "52",
+    "matchedTo": "Нижегородская область",
+    "originalIndex": 32
+  },
+  {
+    "file": "53.geojson",
+    "region": "Новгородская обл.",
+    "code": "53",
+    "matchedTo": "Новгородская область",
+    "originalIndex": 33
+  },
+  {
+    "file": "54.geojson",
+    "region": "Новосибирская обл.",
+    "code": "54",
+    "matchedTo": "Новосибирская область",
+    "originalIndex": 34
+  },
+  {
+    "file": "44.geojson",
+    "region": "Омская обл.",
+    "code": "44",
+    "matchedTo": "Костромская область",
+    "originalIndex": 35
+  },
+  {
+    "file": "56.geojson",
+    "region": "Оренбургская обл.",
+    "code": "56",
+    "matchedTo": "Оренбургская область",
+    "originalIndex": 36
+  },
+  {
+    "file": "57.geojson",
+    "region": "Орловская обл.",
+    "code": "57",
+    "matchedTo": "Орловская область",
+    "originalIndex": 37
+  },
+  {
+    "file": "58.geojson",
+    "region": "Пензенская обл.",
+    "code": "58",
+    "matchedTo": "Пензенская область",
+    "originalIndex": 38
+  },
+  {
+    "file": "59.geojson",
+    "region": "Пермский край",
+    "code": "59",
+    "matchedTo": "Пермский край",
+    "originalIndex": 39
+  },
+  {
+    "file": "25.geojson",
+    "region": "Приморский край",
+    "code": "25",
+    "matchedTo": "Приморский край",
+    "originalIndex": 40
+  },
+  {
+    "file": "60.geojson",
+    "region": "Псковская обл.",
+    "code": "60",
+    "matchedTo": "Псковская область",
+    "originalIndex": 41
+  },
+  {
+    "file": "01.geojson",
+    "region": "Республика Адыгея (Адыгея)",
+    "code": "01",
+    "matchedTo": "Республика Адыгея",
+    "originalIndex": 42
+  },
+  {
+    "file": "04.geojson",
+    "region": "Республика Алтай",
+    "code": "04",
+    "matchedTo": "Республика Алтай",
+    "originalIndex": 43
+  },
+  {
+    "file": "02.geojson",
+    "region": "Республика Башкортостан",
+    "code": "02",
+    "matchedTo": "Республика Башкортостан",
+    "originalIndex": 44
+  },
+  {
+    "file": "03.geojson",
+    "region": "Республика Бурятия",
+    "code": "03",
+    "matchedTo": "Республика Бурятия",
+    "originalIndex": 45
+  },
+  {
+    "file": "05.geojson",
+    "region": "Республика Дагестан",
+    "code": "05",
+    "matchedTo": "Республика Дагестан",
+    "originalIndex": 46
+  },
+  {
+    "file": "06.geojson",
+    "region": "Республика Ингушетия",
+    "code": "06",
+    "matchedTo": "Республика Ингушетия",
+    "originalIndex": 47
+  },
+  {
+    "file": "08.geojson",
+    "region": "Республика Калмыкия",
+    "code": "08",
+    "matchedTo": "Республика Калмыкия",
+    "originalIndex": 48
+  },
+  {
+    "file": "10.geojson",
+    "region": "Республика Карелия",
+    "code": "10",
+    "matchedTo": "Республика Карелия",
+    "originalIndex": 49
+  },
+  {
+    "file": "11.geojson",
+    "region": "Республика Коми",
+    "code": "11",
+    "matchedTo": "Республика Коми",
+    "originalIndex": 50
+  },
+  {
+    "file": "82.geojson",
+    "region": "Республика Крым",
+    "code": "82",
+    "matchedTo": "Республика Крым",
+    "originalIndex": 51
+  },
+  {
+    "file": "12.geojson",
+    "region": "Республика Марий Эл",
+    "code": "12",
+    "matchedTo": "Республика Марий Эл",
+    "originalIndex": 52
+  },
+  {
+    "file": "13.geojson",
+    "region": "Республика Мордовия",
+    "code": "13",
+    "matchedTo": "Республика Мордовия",
+    "originalIndex": 53
+  },
+  {
+    "file": "14.geojson",
+    "region": "Республика Саха (Якутия)",
+    "code": "14",
+    "matchedTo": "Республика Саха (Якутия)",
+    "originalIndex": 54
+  },
+  {
+    "file": "15.geojson",
+    "region": "Республика Северная Осетия - Алания",
+    "code": "15",
+    "matchedTo": "Республика Северная Осетия — Алания",
+    "originalIndex": 55
+  },
+  {
+    "file": "16.geojson",
+    "region": "Республика Татарстан (Татарстан)",
+    "code": "16",
+    "matchedTo": "Республика Татарстан",
+    "originalIndex": 56
+  },
+  {
+    "file": "17.geojson",
+    "region": "Республика Тыва",
+    "code": "17",
+    "matchedTo": "Республика Тыва",
+    "originalIndex": 57
+  },
+  {
+    "file": "19.geojson",
+    "region": "Республика Хакасия",
+    "code": "19",
+    "matchedTo": "Республика Хакасия",
+    "originalIndex": 58
+  },
+  {
+    "file": "61.geojson",
+    "region": "Ростовская обл.",
+    "code": "61",
+    "matchedTo": "Ростовская область",
+    "originalIndex": 59
+  },
+  {
+    "file": "62.geojson",
+    "region": "Рязанская обл.",
+    "code": "62",
+    "matchedTo": "Рязанская область",
+    "originalIndex": 60
+  },
+  {
+    "file": "63.geojson",
+    "region": "Самарская обл.",
+    "code": "63",
+    "matchedTo": "Самарская область",
+    "originalIndex": 61
+  },
+  {
+    "file": "64.geojson",
+    "region": "Саратовская обл.",
+    "code": "64",
+    "matchedTo": "Саратовская область",
+    "originalIndex": 62
+  },
+  {
+    "file": "65.geojson",
+    "region": "Сахалинская обл.",
+    "code": "65",
+    "matchedTo": "Сахалинская область",
+    "originalIndex": 63
+  },
+  {
+    "file": "66.geojson",
+    "region": "Свердловская обл.",
+    "code": "66",
+    "matchedTo": "Свердловская область",
+    "originalIndex": 64
+  },
+  {
+    "file": "67.geojson",
+    "region": "Смоленская обл.",
+    "code": "67",
+    "matchedTo": "Смоленская область",
+    "originalIndex": 65
+  },
+  {
+    "file": "26.geojson",
+    "region": "Ставропольский край",
+    "code": "26",
+    "matchedTo": "Ставропольский край",
+    "originalIndex": 66
+  },
+  {
+    "file": "68.geojson",
+    "region": "Тамбовская обл.",
+    "code": "68",
+    "matchedTo": "Тамбовская область",
+    "originalIndex": 67
+  },
+  {
+    "file": "69.geojson",
+    "region": "Тверская обл.",
+    "code": "69",
+    "matchedTo": "Тверская область",
+    "originalIndex": 68
+  },
+  {
+    "file": "44.geojson",
+    "region": "Томская обл.",
+    "code": "44",
+    "matchedTo": "Костромская область",
+    "originalIndex": 69
+  },
+  {
+    "file": "71.geojson",
+    "region": "Тульская обл.",
+    "code": "71",
+    "matchedTo": "Тульская область",
+    "originalIndex": 70
+  },
+  {
+    "file": "72.geojson",
+    "region": "Тюменская обл.",
+    "code": "72",
+    "matchedTo": "Тюменская область",
+    "originalIndex": 71
+  },
+  {
+    "file": "18.geojson",
+    "region": "Удмуртская Республика",
+    "code": "18",
+    "matchedTo": "Удмуртская Республика",
+    "originalIndex": 72
+  },
+  {
+    "file": "73.geojson",
+    "region": "Ульяновская обл.",
+    "code": "73",
+    "matchedTo": "Ульяновская область",
+    "originalIndex": 73
+  },
+  {
+    "file": "27.geojson",
+    "region": "Хабаровский край",
+    "code": "27",
+    "matchedTo": "Хабаровский край",
+    "originalIndex": 74
+  },
+  {
+    "file": "86.geojson",
+    "region": "Ханты-Мансийский АО - Югра",
+    "code": "86",
+    "matchedTo": "Ханты-Мансийский автономный округ — Югра",
+    "originalIndex": 75
+  },
+  {
+    "file": "74.geojson",
+    "region": "Челябинская обл.",
+    "code": "74",
+    "matchedTo": "Челябинская область",
+    "originalIndex": 76
+  },
+  {
+    "file": "20.geojson",
+    "region": "Чеченская Республика",
+    "code": "20",
+    "matchedTo": "Чеченская Республика",
+    "originalIndex": 77
+  },
+  {
+    "file": "21.geojson",
+    "region": "Чувашская Республика - Чувашия",
+    "code": "21",
+    "matchedTo": "Чувашская Республика",
+    "originalIndex": 78
+  },
+  {
+    "file": "87.geojson",
+    "region": "Чукотский АО",
+    "code": "87",
+    "matchedTo": "Чукотский автономный округ",
+    "originalIndex": 79
+  },
+  {
+    "file": "89.geojson",
+    "region": "Ямало-Ненецкий АО",
+    "code": "89",
+    "matchedTo": "Ямало-Ненецкий автономный округ",
+    "originalIndex": 80
+  },
+  {
+    "file": "76.geojson",
+    "region": "Ярославская обл.",
+    "code": "76",
+    "matchedTo": "Ярославская область",
+    "originalIndex": 81
+  },
+  {
+    "file": "77.geojson",
+    "region": "г. Москва",
+    "code": "77",
+    "matchedTo": "Москва",
+    "originalIndex": 82
+  },
+  {
+    "file": "78.geojson",
+    "region": "г. Санкт-Петербург",
+    "code": "78",
+    "matchedTo": "Санкт-Петербург",
+    "originalIndex": 83
+  },
+  {
+    "file": "92.geojson",
+    "region": "город федерального значения Севастополь",
+    "code": "92",
+    "matchedTo": "Севастополь",
+    "originalIndex": 84
+  }
+]

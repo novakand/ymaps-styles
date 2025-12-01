@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Ymaps Styles</title>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Map container. Yandex Map instance will be rendered into this element. -->
+
+    <div
+        id="maps"
+        class="maps"
+    ></div>
+
+    <!--
+  Template for map marker UI.
+
+  This template defines the DOM structure of a single marker,
+  including its SVG icon. It is cloned in JavaScript for each point
+  on the map.
+  -->
+    <template id="marker-template">
+        <div class="marker">
+            <div class="marker__content">
+                <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 48 48"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M24 0C14.076 0 6 8.132 6 18.13C6 32.336 22.308 47.004 23.002 47.62C23.288 47.874 23.644 48 24 48C24.356 48 24.712 47.874 24.998 47.622C25.692 47.004 42 32.336 42 18.13C42 8.132 33.924 0 24 0ZM24 28C18.486 28 14 23.514 14 18C14 12.486 18.486 8 24 8C29.514 8 34 12.486 34 18C34 23.514 29.514 28 24 28Z"
+                        fill="white"
+                    />
+                </svg>
+
+            </div>
+        </div>
+    </template>
+
+    <!--
+  Template for marker popup content.
+
+  This template is used to render the popup shown when a marker
+  is clicked. Fields are filled in dynamically via JavaScript:
+  - .marker__popup-title
+  - .popup-city-value
+  - .popup-address-value
+  - .popup-email-value
+  - .popup-phone-value
+  - .popup-url-value
+  -->
+
+
+
+
+    <template id="popup-template">
+        <div class="marker__popup-content popup">
+
+            <div class="marker__popup-header header">
+                <div class="marker__popup-title header_title"></div>
+
+                <button
+                    type="button"
+                    class="marker__popup-close header_close"
+                    aria-label="Закрыть"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="none"
+                    >
+                        <path
+                            fill="#c8c9cc"
+                            d="m8 7.057 3.3-3.3.943.943-3.3 3.3 3.3 3.3-.943.943-3.3-3.3-3.3 3.3-.942-.943 3.3-3.3-3.3-3.3.943-.942z"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="marker__popup-body description">
+                <div
+                    class="marker__popup-line popup-city"
+                    hidden
+                >
+                    <span class="marker__popup-label">Город:</span>
+                    <span class="popup-city-value"></span>
+                </div>
+
+                <div
+                    class="marker__popup-line popup-address"
+                    hidden
+                >
+                    <span class="marker__popup-label">Адрес:</span>
+                    <span class="popup-address-value"></span>
+                </div>
+
+                <div
+                    class="marker__popup-line popup-email"
+                    hidden
+                >
+                    <span class="marker__popup-label">Email:</span>
+                    <span class="popup-email-value"></span>
+                </div>
+
+                <div
+                    class="marker__popup-line popup-phone"
+                    hidden
+                >
+                    <span class="marker__popup-label">Телефон:</span>
+                    <a class="popup-phone-value"></a>
+                </div>
+
+            </div>
+
+        </div>
+    </template>
+
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+
+        .maps {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .marker {
+            position: absolute;
+            cursor: pointer;
+            transform: translate(-50%, calc(-100% + 2px));
+            z-index: 1
+        }
+
+        .marker__content {
+            filter: drop-shadow(0px 2px 6px rgba(24, 27, 34, 0.4));
+        }
+
+        .marker__popup {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 12px);
+            transform: translateX(-50%);
+            min-width: 220px;
+            max-width: 260px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 1.4;
+            z-index: 10000;
+            color: black;
+            pointer-events: auto;
+        }
+
+        .marker__popup-content {
+            box-sizing: border-box;
+            max-width: 290px;
+            width: 100%;
+        }
+
+        .popup {
+            display: flex;
+            flex-direction: column;
+            row-gap: 8px;
+        }
+
+        .header {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 8px;
+            padding-right: 20px;
+        }
+
+        .header_title {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 22px;
+            color: #050d33;
+        }
+
+        .marker__popup-close.header_close {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .marker__popup-close.button:hover {
+            background-color: transparent;
+        }
+
+        .description {
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
+            color: #111112;
+        }
+
+        .marker__popup-line+.marker__popup-line {
+            margin-top: 2px;
+        }
+
+        .marker__popup-label {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .marker__popup-content a,
+        .marker__popup-content span {
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .cluster-marker {
+            width: 48px;
+            height: 48px;
+            background: #06285c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(24, 27, 34, 0.5);
+        }
+
+        .cluster-marker__content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 20px;
+            color: #fff;
+
+        }
+    </style>
+
+    <script>
+
+        /**
+        * JS component that renders a Yandex Map via the Yandex Maps JavaScript API.
+        * @see https://yandex.ru/maps-api/docs/js-api/index.html
+        */
+
+        const YMAPS_SCRIPT_ID = "ymapsScript";
+        const MAP_MARGIN = [200, 200, 200, 200];
+        let ymapsLoading = null;
+        let popup = null;
+        let currentPopup = null;
+        let MAP_CUSTOMIZATION = []
+        let map;
+
+        /**
+     * Global Yandex Maps configuration.
+     *
+     * Note: these parameters cannot be set or changed after the map is initialized.
+     * @see https://yandex.ru/maps-api/docs/js-api/map/localization.html
+     */
+        const YMAPS_CONFIG = {
+            apikey: "042405c2-12f5-4b78-9580-cb5ea1d7c106",
+            lang: "ru_RU"
+        };
+
+
+        /**
+         * Initial map options.
+         *
+         * @see https://yandex.ru/maps-api/docs/js-api/map/YMap.html
+         */
+        const mapOptions = {
+            location: {
+                center: [37.618423, 55.751244],
+                zoom: 4
+            },
+            mode: "vector",
+            theme: "light",
+            zoomRange: { min: 3, max: 22 },
+            margin: getMapMargin(),
+            bounds: [[-83.8, -170.8], [83.8, 170.8]],
+        };
+
+
+        let dataPoints = {};
+
+        let dataPolygons = {};
+
+
+        async function loadJson(path) {
+            try {
+                const res = await fetch(path, { cache: "no-cache" });
+                if (!res.ok) {
+                    console.warn("Failed to load", path, res.status);
+                    return null;
+                }
+                return await res.json();
+            } catch (err) {
+                console.warn("Error loading json", path, err);
+                return null;
+            }
+        }
+
+
+        async function loadDataFiles() {
+            // пути относительно index.html — поправьте имена, если у вас другие
+            const files = {
+                points: "data/points.json",
+                polygons: "data/region.json", // или regions.json / polygons.json
+                style: "data/style.json"
+            };
+
+            const [points, polygons, style] = await Promise.all([
+                loadJson(files.points),
+                loadJson(files.polygons),
+                loadJson(files.style)
+            ]);
+
+            dataPoints = (points && points.type === "FeatureCollection") ? points : { type: "FeatureCollection", features: [] };
+            dataPolygons = (polygons && polygons.type === "FeatureCollection") ? polygons : { type: "FeatureCollection", features: [] };
+
+            // style.json — ожидаем объект/массив для customization слоя схемы
+            if (style) {
+                // style.json может содержать объект с ключом customization или быть массивом сразу
+                MAP_CUSTOMIZATION = style.customization ?? style;
+            } else {
+                MAP_CUSTOMIZATION = [];
+            }
+
+            console.info("Loaded data:", {
+                points: dataPoints.features.length,
+                polygons: dataPolygons.features.length,
+                mapCustomization: Array.isArray(MAP_CUSTOMIZATION) ? MAP_CUSTOMIZATION.length : Object.keys(MAP_CUSTOMIZATION).length
+            });
+        }
+
+
+
+        function getMapMargin() {
+            const width = window.innerWidth || document.documentElement.clientWidth;
+
+
+            if (width <= 480) {
+                return [60, 35, 60, 35];
+            }
+
+            if (width <= 992) {
+                return [80, 80, 80, 40];
+            }
+
+            return [200, 200, 200, 200];
+        }
+
+        function createMarkerTemplate(properties = {}) {
+            const template = document.getElementById("marker-template");
+
+            if (template && template.content && template.content.firstElementChild) {
+                const element = template.content.firstElementChild.cloneNode(true);
+                element.title = properties.name || "";
+                return element;
+            }
+
+            const element = document.createElement("div");
+            element.className = "marker";
+            element.title = properties.name || "";
+
+            const bg = document.createElement("div");
+            bg.className = "marker__content";
+            element.appendChild(bg);
+
+            return element;
+        }
+
+        function buildMarker(properties = {}) {
+            const element = createMarkerTemplate(properties);
+            return element;
+        }
+
+        function buildFeature(data) {
+            const { coords, element, properties } = data || {};
+            return new ymaps3.YMapFeature({
+                geometry: {
+                    type: "Point",
+                    coordinates: coords
+                },
+                properties,
+                style: {
+                    element
+                }
+            });
+        }
+
+        function addGeoJsonFeatures(geoJson) {
+            if (!geoJson || geoJson.type !== "FeatureCollection" || !Array.isArray(geoJson.features)) {
+                console.warn("Invalid GeoJSON", geoJson);
+                return;
+            }
+
+            function sanitizeLon(lon) {
+                if (lon === 180) return 179.999999;
+                if (lon === -180) return -179.999999;
+                return lon;
+            }
+
+            function ensureRingClosed(ring) {
+                if (!Array.isArray(ring) || ring.length === 0) return ring;
+                const first = ring[0], last = ring[ring.length - 1];
+                if (first[0] !== last[0] || first[1] !== last[1]) {
+                    return [...ring, [Number(first[0]), Number(first[1])]];
+                }
+                return ring;
+            }
+
+            function fixLonContinuityForRing(ring) {
+                if (!Array.isArray(ring) || ring.length === 0) return ring.map(p => [sanitizeLon(p[0]), p[1]]);
+                const out = [[Number(ring[0][0]), Number(ring[0][1])]];
+                for (let i = 1; i < ring.length; i++) {
+                    let lon = Number(ring[i][0]);
+                    const lat = Number(ring[i][1]);
+                    let prev = out[out.length - 1][0];
+                    while (lon - prev > 180) lon -= 360;
+                    while (lon - prev <= -180) lon += 360;
+                    out.push([lon, lat]);
+                }
+                return out.map(([lon, lat]) => [sanitizeLon(lon), lat]);
+            }
+
+            geoJson.features.forEach(feature => {
+                if (!feature || !feature.geometry) return;
+                const geomType = feature.geometry.type;
+                const props = feature.properties || {};
+
+                if (geomType === "Point") {
+                    const coords = feature.geometry.coordinates;
+                    if (!Array.isArray(coords)) return;
+                    const element = buildMarker(props);
+                    const pointFeature = buildFeature({ coords, element, properties: props });
+                    map.addChild(pointFeature);
+                    element.addEventListener("click", () => onMarkerClick(props, element, coords));
+                    return;
+                }
+
+                try {
+                    const fc = turf.flatten(feature);
+                    if (!fc || !Array.isArray(fc.features)) return;
+
+                    fc.features.forEach(polyFeat => {
+                        let safe = turf.rewind(polyFeat, { reverse: false });
+
+                        let parts = null;
+                        try {
+                            parts = turf.unkinkPolygon(safe);
+                        } catch (e) {
+                            parts = null;
+                        }
+
+                        const handlePart = (part) => {
+                            if (!part || !part.geometry || part.geometry.type !== "Polygon") return;
+                            const rawCoords = part.geometry.coordinates || [];
+                            const safeCoords = rawCoords.map(ring => ensureRingClosed(fixLonContinuityForRing(ring)));
+
+                            const polyY = buildPolygonFeature({ coords: safeCoords, properties: props });
+                            map.addChild(polyY);
+
+                            try {
+                                if (polyY.events && typeof polyY.events.add === "function") {
+                                    polyY.events.add("click", () => {
+                                        const centroid = getPolygonCentroid(safeCoords);
+                                        if (centroid) onOpenPopup(props, centroid);
+                                    });
+                                } else if (typeof polyY.addEventListener === "function") {
+                                    polyY.addEventListener("click", () => {
+                                        const centroid = getPolygonCentroid(safeCoords);
+                                        if (centroid) onOpenPopup(props, centroid);
+                                    });
+                                }
+                            } catch (e) { }
+                        };
+
+                        if (parts && parts.type === "FeatureCollection" && Array.isArray(parts.features) && parts.features.length) {
+                            parts.features.forEach(part => handlePart(part));
+                        } else {
+                            if (!safe.geometry || safe.geometry.type !== "Polygon") return;
+                            handlePart(safe);
+                        }
+                    });
+                } catch (err) {
+                    console.warn("turf processing failed for feature", err);
+                }
+            });
+        }
+
+
+
+        function equalPoint(a, b) {
+            if (!Array.isArray(a) || !Array.isArray(b)) return false;
+            return Number(a[0]) === Number(b[0]) && Number(a[1]) === Number(b[1]);
+        }
+
+
+        function normalizeLonTo180(lon) {
+            let L = Number(lon);
+            while (L <= -180) L += 360;
+            while (L > 180) L -= 360;
+            return L;
+        }
+
+        function unwrapLongitudes(ring) {
+            if (!Array.isArray(ring) || ring.length === 0) return ring;
+            let sumX = 0, sumY = 0;
+            ring.forEach(([lon]) => {
+                const rad = (Number(lon) || 0) * Math.PI / 180;
+                sumX += Math.cos(rad);
+                sumY += Math.sin(rad);
+            });
+            const avgRad = Math.atan2(sumY, sumX);
+            let avgLon = avgRad * 180 / Math.PI;
+
+            return ring.map(([lon, lat]) => {
+                let L = Number(lon);
+                while (L - avgLon > 180) L -= 360;
+                while (L - avgLon <= -180) L += 360;
+                return [L, Number(lat)];
+            });
+        }
+
+
+        function ensureRingClosed(ring) {
+            if (!Array.isArray(ring) || ring.length === 0) return ring;
+            const first = ring[0];
+            const last = ring[ring.length - 1];
+            if (!equalPoint(first, last)) {
+                return [...ring, [Number(first[0]), Number(first[1])]];
+            }
+            return ring;
+        }
+
+        function normalizePolygonCoords(polygonCoords) {
+            if (!Array.isArray(polygonCoords)) return polygonCoords;
+            const outer = polygonCoords[0] || [];
+            if (outer.length === 0) return polygonCoords;
+            const unwrappedOuter = unwrapLongitudes(outer);
+
+            let sumX = 0, sumY = 0;
+            unwrappedOuter.forEach(([lon]) => {
+                const rad = (Number(lon) || 0) * Math.PI / 180;
+                sumX += Math.cos(rad);
+                sumY += Math.sin(rad);
+            });
+            const baseAvgLon = (Math.atan2(sumY, sumX) * 180 / Math.PI) || 0;
+
+            const adjustRingToBase = (ring) => {
+                return ring.map(([lon, lat]) => {
+                    let L = Number(lon);
+                    while (L - baseAvgLon > 180) L -= 360;
+                    while (L - baseAvgLon <= -180) L += 360;
+                    return [L, Number(lat)];
+                });
+            };
+
+            const normalized = [];
+            normalized.push(ensureRingClosed(unwrappedOuter.map(([lon, lat]) => [Number(lon), Number(lat)])));
+
+            for (let i = 1; i < polygonCoords.length; i++) {
+                const ring = polygonCoords[i] || [];
+                const adj = adjustRingToBase(ring);
+                normalized.push(ensureRingClosed(adj.map(([lon, lat]) => [Number(lon), Number(lat)])));
+            }
+
+            const final = normalized.map(ring => ring.map(([lon, lat]) => [normalizeLonTo180(lon), lat]));
+
+            return final;
+        }
+
+
+
+        function buildPolygonFeature({ type = "Polygon", coords, properties = {}, styleOptions = {} } = {}) {
+            const defaultStyle = {
+                stroke: [
+                    { color: '#EB5547', width: 1 }
+                ],
+                fill:
+                    { color: 'rgba(225,132,131,0.5)' }
+
+            };
+
+            return new ymaps3.YMapFeature({
+                geometry: { type, coordinates: coords },
+                properties,
+                style: {
+                    stroke: [{ color: '#ffffff', width: 2, opacity: 1 }],
+                    fill: '#273b63',
+                    fillOpacity: 0.5
+                }
+            });
+        }
+
+
+        function withAlpha(hex, a) {
+            hex + Math.round(Math.max(0, Math.min(1, a)) * 255).toString(16).padStart(2, '0').toUpperCase();
+        }
+
+
+        function getPolygonCentroid(polygonCoordsOrRing) {
+            let ring = null;
+
+            if (!polygonCoordsOrRing) return null;
+
+            // Если передали Polygon: [ [ [lng,lat], ... ], ... ]
+            if (Array.isArray(polygonCoordsOrRing) && Array.isArray(polygonCoordsOrRing[0]) && Array.isArray(polygonCoordsOrRing[0][0])) {
+                ring = polygonCoordsOrRing[0]; // внешний контур
+            } else if (Array.isArray(polygonCoordsOrRing) && Array.isArray(polygonCoordsOrRing[0]) && typeof polygonCoordsOrRing[0][0] === "number") {
+                // передан непосредственно ring: [ [lng,lat], ... ]
+                ring = polygonCoordsOrRing;
+            } else {
+                return null;
+            }
+
+            let sumLng = 0, sumLat = 0, cnt = 0;
+            ring.forEach(pt => {
+                const [lng, lat] = pt;
+                if (Number.isFinite(lng) && Number.isFinite(lat)) {
+                    sumLng += lng; sumLat += lat; cnt++;
+                }
+            });
+            if (!cnt) return null;
+            return [sumLng / cnt, sumLat / cnt];
+        }
+        const normalizePhone = (phone) =>
+            typeof phone === "string" ? phone.replace(/[^\d+]/g, "") : phone || "";
+
+        const buildPopupTemplate = (props = {}) => {
+            const tpl = document.getElementById("popup-template");
+            const node = tpl.content.cloneNode(true);
+
+            const { name, fullAddress } = props;
+            const title = name || " ";
+
+            node.querySelector(".marker__popup-title").textContent = title;
+
+            if (fullAddress) {
+                const el = node.querySelector(".popup-address");
+                el.hidden = false;
+                el.querySelector(".popup-address-value").textContent = fullAddress;
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.appendChild(node);
+
+            return wrapper.innerHTML.trim();
+        };
+
+
+        function buildPopupContent(properties = {}) {
+            const contentEl = document.createElement("div");
+            contentEl.className = "marker__popup-content";
+            contentEl.innerHTML = buildPopupTemplate(properties);
+
+            const closeBtn = contentEl.querySelector(".marker__popup-close");
+            closeBtn.addEventListener("click", () => onClosePopup());
+
+            return contentEl;
+        }
+
+        function onClosePopup() {
+            if (currentPopup && map) {
+                map.removeChild(currentPopup);
+                currentPopup = null;
+            }
+        }
+
+        function onOpenPopup(properties = {}, coords) {
+            if (!coords || !Array.isArray(coords)) return;
+            if (!popup || !map) return;
+
+            onClosePopup();
+
+            currentPopup = new popup({
+                coordinates: coords,
+                draggable: false,
+                offset: 55,
+                show: true,
+                content: () => buildPopupContent(properties)
+            });
+
+            map.addChild(currentPopup);
+        }
+
+        function onMarkerClick(properties = {}, markerElement, coords) {
+            const { name, fullAddress, } = properties;
+            const data = [
+                name,
+                fullAddress,
+
+            ].filter(Boolean);
+
+            if (!data.length) return;
+
+            onOpenPopup(properties, coords);
+        }
+
+        const getGeoJsonBounds = (geoJson) => {
+            const coords = geoJson?.features
+                ?.map((f) => f?.geometry?.coordinates)
+                ?.filter((c) => Array.isArray(c) && c.length === 2)
+                ?.filter(([lng, lat]) => Number.isFinite(lng) && Number.isFinite(lat));
+
+            if (!coords?.length) return null;
+
+
+            const [minLng, maxLng, minLat, maxLat] = coords.reduce(
+                ([minLng, maxLng, minLat, maxLat], [lng, lat]) => [
+                    minLng === null || lng < minLng ? lng : minLng,
+                    maxLng === null || lng > maxLng ? lng : maxLng,
+                    minLat === null || lat < minLat ? lat : minLat,
+                    maxLat === null || lat > maxLat ? lat : maxLat
+                ],
+                [null, null, null, null]
+            );
+
+            return [
+                [minLng, minLat],
+                [maxLng, maxLat]
+            ];
+        };
+
+        const fitBounds = (bounds, duration = 400) => {
+            if (!bounds) return;
+
+            map.update({
+                location: {
+                    bounds,
+                    easing: 'ease-in-out',
+                    duration
+                }
+            });
+        };
+
+        async function onInitMaps() {
+            const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapControls } = ymaps3;
+            const { YMapPopupMarker, YMapZoomControl, YMapGeolocationControl } = await ymaps3.import('@yandex/ymaps3-default-ui-theme');
+            popup = YMapPopupMarker;
+
+            const container = document.getElementById("maps");
+
+            map = new YMap(container, mapOptions);
+
+            await loadDataFiles();
+            map.addChild(new YMapDefaultSchemeLayer({
+                customization: MAP_CUSTOMIZATION
+            }));
+            map.addChild(new YMapDefaultFeaturesLayer());
+
+            const rightControls = new YMapControls({ position: 'right' });
+            const GEOLOCATION_OPTIONS = {
+                positionOptions: { enableHighAccuracy: true },
+                flyTo: true
+            };
+
+            rightControls
+                .addChild(new YMapZoomControl({}))
+                .addChild(new YMapGeolocationControl(GEOLOCATION_OPTIONS));
+
+            map.addChild(rightControls);
+
+            addGeoJsonFeatures(dataPoints);
+            addGeoJsonFeatures(dataPolygons);
+
+            fitBounds(getGeoJsonBounds(dataPoints));
+            watchForZoomChanges();
+
+        }
+
+
+        function watchForZoomChanges() {
+            if (!map || !ymaps3?.YMapListener) return;
+
+            let lastZoom = map.zoom ?? null;
+            const listener = new ymaps3.YMapListener({
+                onUpdate: ({ location }) => {
+                    const zoom = location?.zoom;
+                    if (zoom === lastZoom) return;
+                    lastZoom = zoom;
+                    onClosePopup();
+                }
+            });
+
+            map.addChild(listener);
+        }
+
+        const buildYMapsSrc = (config = {}) => {
+            const { enterprise = false, version = "v3", ...params } = config;
+            const query = Object.entries(params)
+                .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                .join("&");
+
+            return `https://${enterprise ? "enterprise." : ""}api-maps.yandex.ru/${version}/?${query}`;
+        };
+
+        const createYMapsScript = (src) => {
+            const script = document.createElement("script");
+            script.id = YMAPS_SCRIPT_ID;
+            script.async = true;
+            script.defer = true;
+            script.src = src;
+            return script;
+        };
+
+        const ensureReady = () =>
+            window.ymaps3?.ready
+                ? window.ymaps3.ready.then(() => window.ymaps3)
+                : Promise.resolve(window.ymaps3);
+
+        const loadYMaps = (config = {}) => {
+            if (window.ymaps3?.ready) return Promise.resolve(window.ymaps3);
+            if (ymapsLoading) return ymapsLoading;
+
+            const handleLoad = (resolve) => () => ensureReady().then(resolve);
+
+            const existing = document.getElementById(YMAPS_SCRIPT_ID);
+            if (existing) {
+                ymapsLoading = new Promise((resolve, reject) => {
+                    existing.addEventListener("load", handleLoad(resolve), { once: true });
+                    existing.addEventListener("error", reject, { once: true });
+                });
+                return ymapsLoading;
+            }
+
+            const script = createYMapsScript(buildYMapsSrc(config));
+
+            ymapsLoading = new Promise((resolve, reject) => {
+                script.addEventListener("load", handleLoad(resolve), { once: true });
+                script.addEventListener("error", reject, { once: true });
+            });
+
+            document.head.appendChild(script);
+
+            return ymapsLoading;
+        };
+
+        const onReady = () =>
+            loadYMaps(YMAPS_CONFIG)
+                .then(() => ymaps3.ready)
+                .then(() => (
+                    ymaps3.import.registerCdn(
+                        'https://cdn.jsdelivr.net/npm/{package}',
+                        ['@yandex/ymaps3-default-ui-theme@latest']
+                    ),
+                    onInitMaps()
+                ))
+                .catch(err => console.error("Error maps:", err));
+
+        document.addEventListener("DOMContentLoaded", onReady);
+
+    </script>
+</body>
+
+</html>
