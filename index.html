@@ -308,7 +308,7 @@
         let YMapGeolocationControl = null;
 
 
-         const mapOptions = {
+        const mapOptions = {
             location: { center: [37.618423, 55.751244], zoom: 4 },
             mode: "vector",
             theme: "light",
@@ -316,7 +316,6 @@
             margin: getMapMargin(),
             bounds: [[-83.8, -170.8], [83.8, 170.8]]
         };
-
 
         function getMapMargin() {
             const width = window.innerWidth || document.documentElement.clientWidth;
@@ -329,16 +328,16 @@
             return breakpoints.find(bp => !bp.max || width <= bp.max).margin;
         }
 
-     function resolveIconUrl(iconUrl) {
-    if (!iconUrl) return '';
+        function resolveIconUrl(iconUrl) {
+            if (!iconUrl) return '';
 
-    if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
-        return iconUrl;
-    }
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    const basePath = isGitHubPages ? '/novakand' : ''; // замените на имя репозитория
-    return iconUrl.startsWith('/') ? basePath + iconUrl : iconUrl;
-}
+            if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
+                return iconUrl;
+            }
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            const basePath = isGitHubPages ? '/novakand' : '';
+            return iconUrl.startsWith('/') ? basePath + iconUrl : iconUrl;
+        }
 
         async function loadJson(path) {
             try {
@@ -416,9 +415,9 @@
         function addIconToMarker(element, iconUrl) {
             const contentEl = element.querySelector(".marker__content");
             if (contentEl) {
-            const resolvedUrl = resolveIconUrl(iconUrl);
-            contentEl.innerHTML = `<img src="${resolvedUrl}" alt="" />`;
-        }
+                const resolvedUrl = resolveIconUrl(iconUrl);
+                contentEl.innerHTML = `<img src="${resolvedUrl}" alt="" />`;
+            }
         }
 
         function createPopupContent(properties = {}) {
@@ -634,7 +633,7 @@
 
             dataPoints = {
                 type: "FeatureCollection",
-                features: [...(mainPoints.features || []), ...(extraPoints.features || [])]
+                features: [...(extraPoints.features || []), ...(mainPoints.features || [])]
             };
 
             dataPolygons = polygons?.type === "FeatureCollection"
