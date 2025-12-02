@@ -258,14 +258,7 @@
                 if (typeof window.MAP_BASE_URL !== 'undefined') {
                     return window.MAP_BASE_URL;
                 }
-                if (window.location.hostname.includes('github.io')) {
-                    const pathParts = window.location.pathname.split('/').filter(Boolean);
-                    console.log('GitHub pathParts:', pathParts);
-                    if (pathParts.length > 0) {
-                        return '/' + pathParts[0];
-                    }
-                    return '';
-                }
+
                 return '';
             })(),
 
