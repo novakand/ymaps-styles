@@ -1,0 +1,741 @@
+<!-- Map container. Yandex Map instance will be rendered into this element. -->
+<div style="height: 500px; overflow: hidden;">
+<div
+    id="maps2"
+    class="maps"
+></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+
+<!--
+  Template for map marker UI.
+
+  This template defines the DOM structure of a single marker,
+  including its SVG icon. It is cloned in JavaScript for each point
+  on the map.
+  -->
+<template id="marker-template">
+    <div class="marker">
+        <div class="marker__content">
+            <svg
+                width="48"
+                height="48"
+                viewBox="0 0 48 48"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                    d="M24 0C14.076 0 6 8.132 6 18.13C6 32.336 22.308 47.004 23.002 47.62C23.288 47.874 23.644 48 24 48C24.356 48 24.712 47.874 24.998 47.622C25.692 47.004 42 32.336 42 18.13C42 8.132 33.924 0 24 0ZM24 28C18.486 28 14 23.514 14 18C14 12.486 18.486 8 24 8C29.514 8 34 12.486 34 18C34 23.514 29.514 28 24 28Z"
+                    fill="white"
+                />
+            </svg>
+
+        </div>
+    </div>
+</template>
+
+<!--
+  Template for marker popup content.
+
+  This template is used to render the popup shown when a marker
+  is clicked. Fields are filled in dynamically via JavaScript:
+  -->
+
+  <template id="popup-template">
+        <div class="marker__popup-content popup">
+
+            <div class="marker__popup-header header">
+                <div class="marker__popup-title header_title"></div>
+
+                <button
+                    type="button"
+                    class="marker__popup-close header_close"
+                    aria-label="Закрыть"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="none"
+                    >
+                        <path
+                            fill="#c8c9cc"
+                            d="m8 7.057 3.3-3.3.943.943-3.3 3.3 3.3 3.3-.943.943-3.3-3.3-3.3 3.3-.942-.943 3.3-3.3-3.3-3.3.943-.942z"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="marker__popup-body description">
+                <div
+                    class="marker__popup-line popup-address"
+                    hidden
+                >
+                    <span class="marker__popup-label">Адрес:</span>
+                    <span class="popup-address-value"></span>
+                </div>
+                <div
+                    class="marker__popup-line popup-link"
+                    hidden
+                >
+                    <a
+                        class="popup-link-value"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >Подробнее</a>
+                </div>
+
+
+
+            </div>
+
+        </div>
+    </template>
+
+<style>
+  
+    .maps {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .marker {
+        position: absolute;
+        cursor: pointer;
+        transform: translate(-50%, calc(-100% + 2px));
+        z-index: 1
+    }
+
+    .marker__content {
+        filter: drop-shadow(0px 2px 6px rgba(24, 27, 34, 0.4));
+    }
+
+    .marker__popup {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 12px);
+        transform: translateX(-50%);
+        min-width: 220px;
+        max-width: 260px;
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 1.4;
+        z-index: 10000;
+        color: black;
+        pointer-events: auto;
+    }
+
+    .marker__popup-content {
+        box-sizing: border-box;
+        max-width: 290px;
+        width: 100%;
+    }
+
+    .popup {
+        display: flex;
+        flex-direction: column;
+        row-gap: 8px;
+    }
+
+    .header {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 8px;
+        padding-right: 20px;
+    }
+
+    .header_title {
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 22px;
+        color: #050d33;
+    }
+
+    .marker__popup-close.header_close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .marker__popup-close.button:hover {
+        background-color: transparent;
+    }
+
+    .description {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        color: #111112;
+    }
+
+    .marker__popup-line+.marker__popup-line {
+        margin-top: 2px;
+    }
+
+    .marker__popup-label {
+        font-weight: 600;
+        margin-right: 4px;
+    }
+
+    .marker__popup-content a,
+    .marker__popup-content span {
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .cluster-marker {
+        width: 48px;
+        height: 48px;
+        background: #06285c;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        box-shadow: 0 2px 6px rgba(24, 27, 34, 0.5);
+    }
+
+    .cluster-marker__content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 20px;
+        color: #fff;
+    }
+</style>
+
+<script type="module">
+   
+    const BASE_URL = 'https://raw.githubusercontent.com/novakand/ymaps-styles/master';
+
+    const CONFIG = {
+        YMAPS_SCRIPT_ID: "ymapsScript",
+        MAP_MARGIN: [0, 0, 0, 0],
+
+        DEFAULT_POLYGON_STYLE: {
+            stroke: [{ color: '#ffffff', width: 2, opacity: 1 }],
+            fill: '#273b63',
+            fillOpacity: 0.5
+        },
+
+        DATA_URLS: {
+            points: getDataUrl("assets/data/point-contacts.json"),
+            style: getDataUrl("assets/data/style.json")
+        },
+
+        YMAPS_CONFIG: {
+            apikey: "042405c2-12f5-4b78-9580-cb5ea1d7c106",
+            lang: "ru_RU"
+        },
+
+        GEOLOCATION_OPTIONS: {
+            positionOptions: { enableHighAccuracy: true },
+            flyTo: true
+        }
+    };
+
+    let ymapsLoading = null;
+    let popup = null;
+    let currentPopup = null;
+    let mapCustomization = [];
+    let map = null;
+    let dataPoints = { type: "FeatureCollection", features: [] };
+    let dataPolygons = { type: "FeatureCollection", features: [] };
+    let YMapZoomControl = null;
+    let YMapGeolocationControl = null;
+
+    const mapOptions = {
+        location: { center: [37.618423, 55.751244], zoom: 4 },
+        mode: "vector",
+        theme: "light",
+        zoomRange: { min: 3, max: 22 },
+        margin: getMapMargin(),
+        bounds: [[-83.8, -170.8], [83.8, 170.8]]
+    };
+
+    function getDataUrl(filename) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return `data/${filename}`;
+        }
+        return `${BASE_URL}/${filename}`;
+    }
+
+    function resolveIconUrl(iconUrl) {
+        if (!iconUrl) return '';
+        if (iconUrl.startsWith('http')) return iconUrl;
+        const cleanPath = iconUrl.startsWith('/') ? iconUrl.substring(1) : iconUrl;
+        return `${BASE_URL}/${cleanPath}`;
+    }
+
+    function getMapMargin() {
+        const width = window.innerWidth || document.documentElement.clientWidth;
+        const breakpoints = [
+            { max: 480, margin: [60, 35, 60, 35] },
+            { max: 992, margin: [80, 80, 80, 40] },
+            { margin: CONFIG.MAP_MARGIN }
+        ];
+
+        return breakpoints.find(bp => !bp.max || width <= bp.max).margin;
+    }
+    async function loadJson(path) {
+        try {
+            const response = await fetch(path, { cache: "no-cache" });
+            return response.ok ? await response.json() : null;
+        } catch (error) {
+            console.warn(`Error loading ${path}:`, error);
+            return null;
+        }
+    }
+
+    function sanitizeLongitude(value) {
+        if (Math.abs(value) === 180) return Math.sign(value) * 179.999999;
+        return Number(value);
+    }
+
+    function arePointsEqual(a, b) {
+        return Array.isArray(a) && Array.isArray(b) &&
+            Number(a[0]) === Number(b[0]) &&
+            Number(a[1]) === Number(b[1]);
+    }
+
+    function ensureRingClosed(ring) {
+        if (!Array.isArray(ring) || ring.length === 0) return ring;
+
+        const first = ring[0];
+        const last = ring[ring.length - 1];
+
+        return arePointsEqual(first, last)
+            ? ring
+            : [...ring, [Number(first[0]), Number(first[1])]];
+    }
+
+    function fixLongitudeContinuity(ring) {
+        if (!Array.isArray(ring) || ring.length === 0) return [];
+
+        const result = [[Number(ring[0][0]), Number(ring[0][1])]];
+
+        for (let i = 1; i < ring.length; i++) {
+            let [lon, lat] = [Number(ring[i][0]), Number(ring[i][1])];
+            const prevLon = result[result.length - 1][0];
+
+            while (lon - prevLon > 180) lon -= 360;
+            while (lon - prevLon <= -180) lon += 360;
+
+            result.push([sanitizeLongitude(lon), lat]);
+        }
+
+        return result;
+    }
+
+    function prepareRingCoordinates(ring) {
+        return ensureRingClosed(fixLongitudeContinuity(ring));
+    }
+
+    function createMarkerElement(properties = {}) {
+        const template = document.getElementById("marker-template");
+        const element = template?.content?.firstElementChild?.cloneNode(true) || createDefaultMarker();
+
+        element.title = properties.name || properties.org || "";
+        properties.iconUrl && addIconToMarker(element, properties);
+
+        return element;
+    }
+
+    function createDefaultMarker() {
+        const element = document.createElement("div");
+        element.className = "marker";
+        const content = document.createElement("div");
+        content.className = "marker__content";
+        element.appendChild(content);
+        return element;
+    }
+
+  function addIconToMarker(element, properties) {
+            const contentEl = element.querySelector(".marker__content");
+            if (contentEl) {
+                const resolvedUrl = resolveIconUrl(properties?.iconUrl);
+                contentEl.innerHTML = `<img src="${resolvedUrl}" alt="" style="height: ${properties?.iconSize}px;" />`;
+            }
+        }
+
+      function createPopupContent(properties = {}) {
+            const template = document.getElementById("popup-template");
+            const fragment = template?.content?.cloneNode(true) ||
+                document.createDocumentFragment();
+
+            const { name, fullAddress, linkUrl, linkText } = properties;
+            const title = name || " ";
+
+            const titleNode = fragment.querySelector?.(".marker__popup-title");
+            if (titleNode) titleNode.textContent = title;
+
+            if (fullAddress) {
+                const addressEl = fragment.querySelector?.(".popup-address");
+                if (addressEl) {
+                    addressEl.hidden = false;
+                    const valueEl = addressEl.querySelector(".popup-address-value");
+                    if (valueEl) valueEl.textContent = fullAddress;
+                }
+            }
+
+            if (linkUrl) {
+                const linkEl = fragment.querySelector?.(".popup-link");
+                if (linkEl) {
+                    linkEl.hidden = false;
+                    const linkValueEl = linkEl.querySelector(".popup-link-value");
+                    if (linkValueEl) {
+                        linkValueEl.href = linkUrl;
+                        linkValueEl.textContent = properties.linkText || "Подробнее";
+                        linkValueEl.target = "_blank";
+                        linkValueEl.rel = "noopener noreferrer";
+                    }
+                }
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.appendChild(fragment);
+
+            const contentEl = document.createElement("div");
+            contentEl.className = "marker__popup-content";
+            contentEl.innerHTML = wrapper.innerHTML.trim();
+
+            const closeBtn = contentEl.querySelector(".marker__popup-close");
+            if (closeBtn) closeBtn.addEventListener("click", closePopup);
+
+            return contentEl;
+        }
+
+
+    function closePopup() {
+        currentPopup && map?.removeChild(currentPopup);
+        currentPopup = null;
+    }
+
+    function openPopup(properties = {}, coordinates) {
+        if (!coordinates || !Array.isArray(coordinates) || !popup || !map) return;
+
+        closePopup();
+
+        currentPopup = new popup({
+            coordinates,
+            draggable: false,
+            offset: 55,
+            show: true,
+            content: () => createPopupContent(properties)
+        });
+
+        map.addChild(currentPopup);
+    }
+
+    function handleMarkerClick(properties = {}, element, coordinates) {
+        const hasData = [properties.name, properties.fullAddress].some(Boolean);
+        if (hasData) openPopup(properties, coordinates);
+    }
+
+    function getPolygonCentroid(polygonCoordsOrRing) {
+        const ring = Array.isArray(polygonCoordsOrRing?.[0]?.[0])
+            ? polygonCoordsOrRing[0]
+            : polygonCoordsOrRing;
+
+        if (!Array.isArray(ring) || ring.length === 0) return null;
+
+        let sumLon = 0, sumLat = 0, count = 0;
+
+        ring.forEach(point => {
+            const [lon, lat] = point;
+            if (Number.isFinite(lon) && Number.isFinite(lat)) {
+                sumLon += lon;
+                sumLat += lat;
+                count++;
+            }
+        });
+
+        return count > 0 ? [sumLon / count, sumLat / count] : null;
+    }
+
+    function createPointFeature(coords, properties) {
+        const element = createMarkerElement(properties);
+        const feature = new ymaps3.YMapFeature({
+            geometry: { type: "Point", coordinates: coords },
+            properties,
+            style: { element }
+        });
+
+        element.addEventListener("click", () =>
+            handleMarkerClick(properties, element, coords)
+        );
+
+        return feature;
+    }
+
+    function createPolygonFeature(coords, properties = {}) {
+        return new ymaps3.YMapFeature({
+            geometry: { type: "Polygon", coordinates: coords },
+            properties,
+            style: CONFIG.DEFAULT_POLYGON_STYLE
+        });
+    }
+
+    function attachPolygonClickHandler(feature, coords, properties) {
+        const clickHandler = () => {
+            const centroid = getPolygonCentroid(coords);
+            if (centroid) openPopup(properties, centroid);
+        };
+
+        if (feature.events?.add) {
+            feature.events.add("click", clickHandler);
+        } else if (feature.addEventListener) {
+            feature.addEventListener("click", clickHandler);
+        }
+    }
+
+    function processPolygonFeature(polyFeature, originalProperties) {
+        const rewound = turf.rewind(polyFeature, { reverse: false });
+        let parts = null;
+
+        try {
+            parts = turf.unkinkPolygon(rewound);
+        } catch (error) {
+
+        }
+
+        const processSinglePolygon = (poly) => {
+            if (!poly?.geometry || poly.geometry.type !== "Polygon") return null;
+
+            const rawCoords = poly.geometry.coordinates || [];
+            const safeCoords = rawCoords.map(prepareRingCoordinates);
+
+            const feature = createPolygonFeature(safeCoords, originalProperties);
+            attachPolygonClickHandler(feature, safeCoords, originalProperties);
+
+            return feature;
+        };
+
+        if (parts?.type === "FeatureCollection" && parts.features?.length) {
+            return parts.features
+                .map(feature => processSinglePolygon(feature))
+                .filter(Boolean);
+        }
+
+        const result = processSinglePolygon(rewound);
+        return result ? [result] : [];
+    }
+
+    function processFeature(feature) {
+        if (!feature?.geometry) return [];
+
+        const { type: geometryType } = feature.geometry;
+        const properties = feature.properties || {};
+
+        switch (geometryType) {
+            case "Point": {
+                const coords = feature.geometry.coordinates;
+                if (!Array.isArray(coords)) return [];
+                return [createPointFeature(coords, properties)];
+            }
+
+            case "Polygon":
+            case "MultiPolygon": {
+                try {
+                    const flattened = turf.flatten(feature);
+                    if (!flattened?.features) return [];
+
+                    return flattened.features.flatMap(polyFeature =>
+                        processPolygonFeature(polyFeature, properties)
+                    );
+                } catch (error) {
+                    console.warn("Turf processing failed for feature:", error);
+                    return [];
+                }
+            }
+
+            default:
+                return [];
+        }
+    }
+
+    function addGeoJsonFeatures(geoJson) {
+        if (!geoJson?.features?.length || geoJson.type !== "FeatureCollection") {
+            console.warn("Invalid GeoJSON:", geoJson);
+            return;
+        }
+
+        geoJson.features.forEach(feature => {
+            const features = processFeature(feature);
+            features.forEach(f => {
+                if (f) map.addChild(f);
+            });
+        });
+    }
+
+    async function loadDataFiles() {
+        const [points,style] = await Promise.all([
+            loadJson(CONFIG.DATA_URLS.points),
+            loadJson(CONFIG.DATA_URLS.style)
+        ]);
+
+        const mainPoints = points?.type === "FeatureCollection"
+            ? points
+            : { type: "FeatureCollection", features: [] };
+
+        dataPoints = {
+            type: "FeatureCollection",
+            features: [...(mainPoints.features || [])]
+        };
+
+
+        mapCustomization = style?.customization ?? style ?? [];
+    }
+
+    function getGeoJsonBounds(geoJson) {
+        if (!geoJson) return null;
+
+            const [minLng, minLat, maxLng, maxLat] = turf.bbox(geoJson);
+
+            return [
+                [minLng, minLat],
+                [maxLng, maxLat]
+            ];
+    }
+
+    function fitBounds(bounds, duration = 400) {
+        if (!bounds || !map) return;
+        map.update({
+            location: { bounds, easing: 'ease-in-out', duration }
+        });
+    }
+
+    function setupZoomListener() {
+        if (!map || !ymaps3?.YMapListener) return;
+        let lastZoom = map.zoom ?? null;
+
+        const listener = new ymaps3.YMapListener({
+            onUpdate: ({ location }) => {
+                const zoom = location?.zoom;
+                if (zoom !== lastZoom) {
+                    lastZoom = zoom;
+                    closePopup();
+                }
+            }
+        });
+
+        map.addChild(listener);
+    }
+
+    function createMapControls() {
+        const controls = new ymaps3.YMapControls({ position: 'right' });
+        YMapZoomControl && controls.addChild(new YMapZoomControl({}));
+        YMapGeolocationControl && controls.addChild(new YMapGeolocationControl(CONFIG.GEOLOCATION_OPTIONS));
+        return controls;
+    }
+
+    function buildYMapsSrc(config = {}) {
+        const { enterprise = false, version = "v3", ...params } = config;
+        const query = new URLSearchParams(params).toString();
+        const baseUrl = `https://${enterprise ? "enterprise." : ""}api-maps.yandex.ru/${version}/`;
+
+        return `${baseUrl}?${query}`;
+    }
+
+    function loadYMaps(config = {}) {
+        if (window.ymaps3?.ready) return Promise.resolve(window.ymaps3);
+        if (ymapsLoading) return ymapsLoading;
+
+        const handleScriptLoad = (resolve) => () => {
+            const readyPromise = window.ymaps3?.ready
+                ? window.ymaps3.ready.then(() => window.ymaps3)
+                : Promise.resolve(window.ymaps3);
+
+            readyPromise.then(resolve);
+        };
+
+        const existingScript = document.getElementById(CONFIG.YMAPS_SCRIPT_ID);
+        if (existingScript) {
+            ymapsLoading = new Promise((resolve, reject) => {
+                existingScript.addEventListener("load", handleScriptLoad(resolve), { once: true });
+                existingScript.addEventListener("error", reject, { once: true });
+            });
+            return ymapsLoading;
+        }
+
+        const script = document.createElement("script");
+        script.id = CONFIG.YMAPS_SCRIPT_ID;
+        script.async = true;
+        script.defer = true;
+        script.src = buildYMapsSrc(config);
+
+        ymapsLoading = new Promise((resolve, reject) => {
+            script.addEventListener("load", handleScriptLoad(resolve), { once: true });
+            script.addEventListener("error", reject, { once: true });
+        });
+
+        document.head.appendChild(script);
+        return ymapsLoading;
+    }
+
+    async function initializeMap() {
+        const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapControls } = ymaps3;
+
+        const {
+            YMapPopupMarker,
+            YMapZoomControl: importedZoomControl,
+            YMapGeolocationControl: importedGeolocationControl
+        } = await ymaps3.import('@yandex/ymaps3-default-ui-theme');
+
+        popup = YMapPopupMarker;
+        YMapZoomControl = importedZoomControl;
+        YMapGeolocationControl = importedGeolocationControl;
+
+        const container = document.getElementById("maps2");
+        map = new YMap(container, mapOptions);
+
+        await loadDataFiles();
+
+        map.addChild(new YMapDefaultSchemeLayer({
+            customization: mapCustomization
+        }));
+
+        map.addChild(new YMapDefaultFeaturesLayer());
+        map.addChild(createMapControls());
+
+        addGeoJsonFeatures(dataPoints);
+
+        fitBounds(getGeoJsonBounds(dataPoints));
+
+        setupZoomListener();
+    }
+
+    function onInitMap() {
+        loadYMaps(CONFIG.YMAPS_CONFIG)
+            .then(() => ymaps3.ready)
+            .then(() => {
+                ymaps3.import.registerCdn(
+                    'https://cdn.jsdelivr.net/npm/{package}',
+                    ['@yandex/ymaps3-default-ui-theme@latest']
+                );
+                return initializeMap();
+            })
+            .catch(error => console.error("Error initializing maps:", error));
+    }
+
+    document.addEventListener("DOMContentLoaded", onInitMap);
+</script>

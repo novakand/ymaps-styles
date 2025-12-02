@@ -14,11 +14,12 @@
 
     <!-- Map container. Yandex Map instance will be rendered into this element. -->
 
+    <div style="height: 500px; overflow: hidden;">
     <div
-        id="maps"
+        id="maps2"
         class="maps"
     ></div>
-
+</div>
     <!--
   Template for map marker UI.
 
@@ -105,18 +106,11 @@
 
 
     <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-        }
+       
 
         .maps {
             width: 100%;
-            height: 100vh;
+            height:  100%;
             overflow: hidden;
         }
 
@@ -225,12 +219,12 @@
 
     </style>
 
-    <script>
+   <script type="module">
 
         window.MAP_BASE_URL = 'https://raw.githubusercontent.com/novakand/ymaps-styles/master';
         const CONFIG = {
             MAP_MARGIN: [20, 20, 20, 20],
-            MAP_CONTAINER_ID: 'maps',
+            MAP_CONTAINER_ID: 'maps2',
             get BASE_URL() {
 
                 return window.MAP_BASE_URL ||
@@ -245,6 +239,8 @@
 
                 return {
                     points: `${prefix}assets/data/point-contacts.json`,
+                    pointsRegion: `${prefix}assets/data/points-region.json`,
+                    polygons: `${prefix}assets/data/region.json`,
                     style: `${prefix}assets/data/style.json`
                 };
             },
@@ -595,29 +591,23 @@
         }
 
         async function loadDataFiles() {
-            const [points, pointsRegion, polygons, style] = await Promise.all([
+            const [points, style] = await Promise.all([
                 loadJson(resolveUrl(CONFIG.DATA_URLS.points)),
-                loadJson(resolveUrl(CONFIG.DATA_URLS.style))
+                 loadJson(resolveUrl(CONFIG.DATA_URLS.style)),
+               
             ]);
+
+           mapCustomization = style?.customization ?? style ?? [];
 
             const mainPoints = points?.type === "FeatureCollection"
                 ? points
                 : { type: "FeatureCollection", features: [] };
 
-            const extraPoints = pointsRegion?.type === "FeatureCollection"
-                ? pointsRegion
-                : { type: "FeatureCollection", features: [] };
-
             dataPoints = {
                 type: "FeatureCollection",
-                features: [...(extraPoints.features || []), ...(mainPoints.features || [])]
+                features: [...(mainPoints.features || [])]
             };
 
-            dataPolygons = polygons?.type === "FeatureCollection"
-                ? polygons
-                : { type: "FeatureCollection", features: [] };
-
-            mapCustomization = style?.customization ?? style ?? [];
         }
 
         function getGeoJsonBounds(geoJson) {
@@ -705,9 +695,7 @@
             map.addChild(createMapControls());
 
             addGeoJsonFeatures(dataPoints);
-            addGeoJsonFeatures(dataPolygons);
-
-            fitBounds(getGeoJsonBounds(dataPolygons));
+            fitBounds(getGeoJsonBounds(dataPoints));
             addZoomListener();
 
         }
