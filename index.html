@@ -255,25 +255,30 @@
             MAP_MARGIN: [20, 20, 20, 20],
             MAP_CONTAINER_ID: 'maps',
             BASE_URL: (function () {
-                if (typeof window.MAP_BASE_URL !== 'undefined') {
-                    return window.MAP_BASE_URL;
+
+                if (typeof window.MAP_BASE_URL !== 'undefined' && window.MAP_BASE_URL != null) {
+                    const v = String(window.MAP_BASE_URL).trim();
+                    return v.replace(/\/+$/, '');
                 }
 
                 if (window.location.hostname.includes('github.io')) {
-                    return '/ymaps-styles';
+                    const parts = (window.location.pathname || '/').split('/').filter(Boolean);
+                    const repoSegment = parts.length ? '/' + parts[0] : '';
+                    return repoSegment.replace(/\/+$/, '');
                 }
+
                 return '';
             })(),
 
             get DATA_URLS() {
                 const base = CONFIG.BASE_URL;
                 const dataPath = 'assets/data/';
-                const prefix = base ? base.replace(/\/$/, '') + '/' : '';
+                const prefix = base ? ('/' + base.replace(/(^\/+|\/+$)/g, '')) : '';
                 return {
-                    points: `${prefix}${dataPath}points.json`,
-                    pointsRegion: `${prefix}${dataPath}points-region.json`,
-                    polygons: `${prefix}${dataPath}region.json`,
-                    style: `${prefix}${dataPath}style.json`
+                    points: `${prefix}${prefix ? '/' : ''}${dataPath}points.json`.replace(/\/{2,}/g, '/'),
+                    pointsRegion: `${prefix}${prefix ? '/' : ''}${dataPath}points-region.json`.replace(/\/{2,}/g, '/'),
+                    polygons: `${prefix}${prefix ? '/' : ''}${dataPath}region.json`.replace(/\/{2,}/g, '/'),
+                    style: `${prefix}${prefix ? '/' : ''}${dataPath}style.json`.replace(/\/{2,}/g, '/')
                 };
             },
 
