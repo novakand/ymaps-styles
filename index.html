@@ -320,21 +320,24 @@
         };
 
         function resolveUrl(path) {
-            if (!path) return '';
-            if (/^(https?:)?\/\//.test(path)) {
-                return path;
-            }
+  if (!path) return '';
 
-            const base = CONFIG.BASE_URL;
-            if (!base) {
-                return path.startsWith('/') ? path : '/' + path;
-            }
+  // Если это абсолютный URL (http://, https://, //) — вернуть как есть
+  if (/^(https?:)?\/\//.test(path)) return path;
 
-            const cleanBase = base.replace(/\/$/, '');
-            const cleanPath = path.replace(/^\//, '');
-            return `${cleanBase}/${cleanPath}`;
-        }
+  // Если путь уже абсолютен относительно хоста (начинается с '/') — вернуть как есть
+  if (path.startsWith('/')) return path;
 
+  const base = CONFIG.BASE_URL;
+  if (!base) {
+    // относительный путь — вернуть относительный (без добавления лишних слэшей)
+    return path.startsWith('/') ? path : path;
+  }
+
+  const cleanBase = base.replace(/\/$/, '');
+  const cleanPath = path.replace(/^\//, '');
+  return `${cleanBase}/${cleanPath}`;
+}
 
         function getMapMargin() {
             const width = window.innerWidth || document.documentElement.clientWidth;
@@ -771,8 +774,9 @@
                     }
                 );
 
-                await onReadyMap();
                 await turfPromise;
+                await onReadyMap();
+                
 
             } catch (error) {
                 console.error('Error initializing maps:', error);
