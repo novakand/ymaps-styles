@@ -250,36 +250,51 @@
 
     <script>
 
-        // window.MAP_BASE_URL = 'https://raw.githubusercontent.com/novakand/ymaps-styles/master';
+      //  window.MAP_BASE_URL = 'https://raw.githubusercontent.com/novakand/ymaps-styles/master';
         const CONFIG = {
             MAP_MARGIN: [20, 20, 20, 20],
             MAP_CONTAINER_ID: 'maps',
             BASE_URL: (function () {
 
-                if (typeof window.MAP_BASE_URL !== 'undefined' && window.MAP_BASE_URL != null) {
-                    const v = String(window.MAP_BASE_URL).trim();
-                    return v.replace(/\/+$/, '');
-                }
+                 if (typeof window.MAP_BASE_URL !== 'undefined' && window.MAP_BASE_URL != null) {
+    return String(window.MAP_BASE_URL).trim().replace(/\/+$/, '');
+  }
+  if (window.location.hostname.includes('github.io')) {
+    const parts = (window.location.pathname || '/').split('/').filter(Boolean);
+    return parts.length ? '/' + parts[0] : '';
+  }
+  return '';
 
-                if (window.location.hostname.includes('github.io')) {
-                    const parts = (window.location.pathname || '/').split('/').filter(Boolean);
-                    const repoSegment = parts.length ? '/' + parts[0] : '';
-                    return repoSegment.replace(/\/+$/, '');
-                }
-
-                return '';
+               
             })(),
 
             get DATA_URLS() {
-                const base = CONFIG.BASE_URL;
-                const dataPath = 'assets/data/';
-                const prefix = base ? ('/' + base.replace(/(^\/+|\/+$)/g, '')) : '';
-                return {
-                    points: `${prefix}${prefix ? '/' : ''}${dataPath}points.json`.replace(/\/{2,}/g, '/'),
-                    pointsRegion: `${prefix}${prefix ? '/' : ''}${dataPath}points-region.json`.replace(/\/{2,}/g, '/'),
-                    polygons: `${prefix}${prefix ? '/' : ''}${dataPath}region.json`.replace(/\/{2,}/g, '/'),
-                    style: `${prefix}${prefix ? '/' : ''}${dataPath}style.json`.replace(/\/{2,}/g, '/')
-                };
+               const dataPath = 'assets/data/';
+  if (/^https?:\/\//i.test(window.MAP_BASE_URL)) {
+    const clean = window.MAP_BASE_URL.replace(/\/+$/, '');
+    return {
+      points: `${clean}/${dataPath}points.json`,
+      pointsRegion: `${clean}/${dataPath}points-region.json`,
+      polygons: `${clean}/${dataPath}region.json`,
+      style: `${clean}/${dataPath}style.json`
+    };
+  }
+  if (window.MAP_BASE_URL && window.MAP_BASE_URL.startsWith('/')) {
+    const clean = window.MAP_BASE_URL.replace(/\/+$/, '');
+    return {
+      points: `${clean}/${dataPath}points.json`.replace(/\/{2,}/g, '/'),
+      pointsRegion: `${clean}/${dataPath}points-region.json`.replace(/\/{2,}/g, '/'),
+      polygons: `${clean}/${dataPath}region.json`.replace(/\/{2,}/g, '/'),
+      style: `${clean}/${dataPath}style.json`.replace(/\/{2,}/g, '/')
+    };
+  }
+  // default — relative
+  return {
+    points: `${dataPath}points.json`,
+    pointsRegion: `${dataPath}points-region.json`,
+    polygons: `${dataPath}region.json`,
+    style: `${dataPath}style.json`
+  };
             },
 
             DEFAULT_POLYGON_STYLE: {
@@ -319,24 +334,24 @@
             bounds: [[-83.8, -170.8], [83.8, 170.8]]
         };
 
-        function resolveUrl(path) {
+
+    function resolveUrl(path) {
   if (!path) return '';
+  if (/^https?:\/\//i.test(path) || /^\/\//.test(path)) return path; // full URL or protocol-less
+  if (path.startsWith('/')) return path; // already root-relative
 
-  // Если это абсолютный URL (http://, https://, //) — вернуть как есть
-  if (/^(https?:)?\/\//.test(path)) return path;
-
-  // Если путь уже абсолютен относительно хоста (начинается с '/') — вернуть как есть
-  if (path.startsWith('/')) return path;
-
-  const base = CONFIG.BASE_URL;
-  if (!base) {
-    // относительный путь — вернуть относительный (без добавления лишних слэшей)
-    return path.startsWith('/') ? path : path;
+  if (/^https?:\/\//i.test(window.MAP_BASE_URL)) {
+    const cleanBase = window.MAP_BASE_URL.replace(/\/+$/, '');
+    return `${cleanBase}/${path.replace(/^\//, '')}`;
   }
 
-  const cleanBase = base.replace(/\/$/, '');
-  const cleanPath = path.replace(/^\//, '');
-  return `${cleanBase}/${cleanPath}`;
+  if (window.MAP_BASE_URL && window.MAP_BASE_URL.startsWith('/')) {
+    const cleanBase = window.MAP_BASE_URL.replace(/\/+$/, '');
+    return `${cleanBase}/${path.replace(/^\//, '')}`.replace(/\/{2,}/g, '/');
+  }
+
+  // otherwise relative path
+  return path;
 }
 
         function getMapMargin() {
@@ -776,7 +791,7 @@
 
                 await turfPromise;
                 await onReadyMap();
-                
+
 
             } catch (error) {
                 console.error('Error initializing maps:', error);
