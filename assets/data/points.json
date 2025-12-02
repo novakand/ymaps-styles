@@ -8,8 +8,9 @@
                 "name": " АО «Рязанский свинокомплекс»",
                 "fullAddress": "Рязанская область, Рязанский район, п. Искра",
                 "iconUrl": "assets/icons/point.svg",
-                 "linkUrl": "https://sk-panorama.com/objects/",
                 "iconSize": 38,
+                "linkUrl": "https://sk-panorama.com/objects/",
+                "linkText": "Подробнее",
                 "offset": 50
             },
             "geometry": {
@@ -27,8 +28,9 @@
                 "name": "АО «Агрокомплекс «Тамбовский»",
                 "fullAddress": "Тамбовская область, Тамбовский р-н., с. Горелое",
                 "iconUrl": "assets/icons/point.svg",
-                "linkUrl": "https://sk-panorama.com/objects/",
                 "iconSize": 38,
+                "linkUrl": "https://sk-panorama.com/objects/",
+                "linkText": "Подробнее",
                 "offset": 50
             },
             "geometry": {
@@ -46,8 +48,9 @@
                 "name": "ЗАО «Агропромышленная фирма «Наша житница»",
                 "fullAddress": "Смоленская область, Гагаринский р-н.",
                 "iconUrl": "assets/icons/point.svg",
-                 "linkUrl": "https://sk-panorama.com/objects/",
                 "iconSize": 38,
+                "linkUrl": "https://sk-panorama.com/objects/",
+                "linkText": "Подробнее",
                 "offset": 50
             },
             "geometry": {

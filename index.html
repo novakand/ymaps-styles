@@ -262,6 +262,7 @@
                 if (window.location.hostname.includes('github.io')) {
                     const pathParts = window.location.pathname.split('/');
                     if (pathParts.length > 1 && pathParts[1]) {
+
                         return '/' + pathParts[1];
                     }
                 }
@@ -432,7 +433,7 @@
             const fragment = template?.content?.cloneNode(true) ||
                 document.createDocumentFragment();
 
-            const { name, fullAddress, linkUrl } = properties;
+            const { name, fullAddress, linkUrl, linkText } = properties;
             const title = name || " ";
 
             const titleNode = fragment.querySelector?.(".marker__popup-title");
@@ -454,6 +455,7 @@
                     const linkValueEl = linkEl.querySelector(".popup-link-value");
                     if (linkValueEl) {
                         linkValueEl.href = linkUrl;
+                        linkValueEl.textContent = properties.linkText || "Подробнее";
                         linkValueEl.target = "_blank";
                         linkValueEl.rel = "noopener noreferrer";
                     }
