@@ -8,7 +8,6 @@
         content="width=device-width, initial-scale=1.0"
     >
     <title>Ymaps Styles</title>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 </head>
 
 <body>
@@ -52,17 +51,7 @@
 
   This template is used to render the popup shown when a marker
   is clicked. Fields are filled in dynamically via JavaScript:
-  - .marker__popup-title
-  - .popup-city-value
-  - .popup-address-value
-  - .popup-email-value
-  - .popup-phone-value
-  - .popup-url-value
   -->
-
-
-
-
     <template id="popup-template">
         <div class="marker__popup-content popup">
 
@@ -90,36 +79,24 @@
 
             <div class="marker__popup-body description">
                 <div
-                    class="marker__popup-line popup-city"
-                    hidden
-                >
-                    <span class="marker__popup-label">Город:</span>
-                    <span class="popup-city-value"></span>
-                </div>
-
-                <div
                     class="marker__popup-line popup-address"
                     hidden
                 >
                     <span class="marker__popup-label">Адрес:</span>
                     <span class="popup-address-value"></span>
                 </div>
-
                 <div
-                    class="marker__popup-line popup-email"
+                    class="marker__popup-line popup-link"
                     hidden
                 >
-                    <span class="marker__popup-label">Email:</span>
-                    <span class="popup-email-value"></span>
+                    <a
+                        class="popup-link-value"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >Подробнее</a>
                 </div>
 
-                <div
-                    class="marker__popup-line popup-phone"
-                    hidden
-                >
-                    <span class="marker__popup-label">Телефон:</span>
-                    <a class="popup-phone-value"></a>
-                </div>
+
 
             </div>
 
@@ -152,6 +129,10 @@
 
         .marker__content {
             filter: drop-shadow(0px 2px 6px rgba(24, 27, 34, 0.4));
+        }
+
+        .marker__content img {
+            height: 38px;
         }
 
         .marker__popup {
@@ -268,10 +249,37 @@
     </style>
 
     <script>
-        /* ===== CONFIGURATION ===== */
+
+        // window.MAP_BASE_URL = 'https://raw.githubusercontent.com/novakand/ymaps-styles/master';
         const CONFIG = {
-            YMAPS_SCRIPT_ID: "ymapsScript",
-            MAP_MARGIN: [200, 200, 200, 200],
+            MAP_MARGIN: [20, 20, 20, 20],
+            MAP_CONTAINER_ID: 'maps',
+            BASE_URL: (function () {
+                if (typeof window.MAP_BASE_URL !== 'undefined') {
+                    return window.MAP_BASE_URL;
+                }
+
+                if (window.location.hostname.includes('github.io')) {
+                    const pathParts = window.location.pathname.split('/');
+                    if (pathParts.length > 1 && pathParts[1]) {
+                        return '/' + pathParts[1];
+                    }
+                }
+
+                return '';
+            })(),
+
+            get DATA_URLS() {
+                const base = CONFIG.BASE_URL;
+                const dataPath = 'assets/data/';
+                const prefix = base ? base.replace(/\/$/, '') + '/' : '';
+                return {
+                    points: `${prefix}${dataPath}points.json`,
+                    pointsRegion: `${prefix}${dataPath}points-region.json`,
+                    polygons: `${prefix}${dataPath}region.json`,
+                    style: `${prefix}${dataPath}style.json`
+                };
+            },
 
             DEFAULT_POLYGON_STYLE: {
                 stroke: [{ color: '#ffffff', width: 2, opacity: 1 }],
@@ -279,12 +287,6 @@
                 fillOpacity: 0.5
             },
 
-            DATA_URLS: {
-                points: "data/points.json",
-                pointsRegion: "data/points-region.json",
-                polygons: "data/region.json",
-                style: "data/style.json"
-            },
 
             YMAPS_CONFIG: {
                 apikey: "042405c2-12f5-4b78-9580-cb5ea1d7c106",
@@ -297,7 +299,6 @@
             }
         };
 
-        let ymapsLoading = null;
         let popup = null;
         let currentPopup = null;
         let mapCustomization = [];
@@ -317,6 +318,23 @@
             bounds: [[-83.8, -170.8], [83.8, 170.8]]
         };
 
+        function resolveUrl(path) {
+            if (!path) return '';
+            if (/^(https?:)?\/\//.test(path)) {
+                return path;
+            }
+
+            const base = CONFIG.BASE_URL;
+            if (!base) {
+                return path.startsWith('/') ? path : '/' + path;
+            }
+
+            const cleanBase = base.replace(/\/$/, '');
+            const cleanPath = path.replace(/^\//, '');
+            return `${cleanBase}/${cleanPath}`;
+        }
+
+
         function getMapMargin() {
             const width = window.innerWidth || document.documentElement.clientWidth;
             const breakpoints = [
@@ -326,17 +344,6 @@
             ];
 
             return breakpoints.find(bp => !bp.max || width <= bp.max).margin;
-        }
-
-        function resolveIconUrl(iconUrl) {
-            if (!iconUrl) return '';
-
-            if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
-                return iconUrl;
-            }
-            const isGitHubPages = window.location.hostname.includes('github.io');
-            const basePath = isGitHubPages ? '/novakand' : '';
-            return iconUrl.startsWith('/') ? basePath + iconUrl : iconUrl;
         }
 
         async function loadJson(path) {
@@ -398,7 +405,7 @@
             const element = template?.content?.firstElementChild?.cloneNode(true) || createDefaultMarker();
 
             element.title = properties.name || properties.org || "";
-            properties.iconUrl && addIconToMarker(element, properties.iconUrl);
+            properties.iconUrl && addIconToMarker(element, properties);
 
             return element;
         }
@@ -412,11 +419,11 @@
             return element;
         }
 
-        function addIconToMarker(element, iconUrl) {
+        function addIconToMarker(element, properties) {
             const contentEl = element.querySelector(".marker__content");
             if (contentEl) {
-                const resolvedUrl = resolveIconUrl(iconUrl);
-                contentEl.innerHTML = `<img src="${resolvedUrl}" alt="" />`;
+                const resolvedUrl = resolveUrl(properties?.iconUrl);
+                contentEl.innerHTML = `<img src="${resolvedUrl}" alt="" style="height: ${properties?.iconSize}px;" />`;
             }
         }
 
@@ -425,7 +432,7 @@
             const fragment = template?.content?.cloneNode(true) ||
                 document.createDocumentFragment();
 
-            const { name, fullAddress } = properties;
+            const { name, fullAddress, linkUrl } = properties;
             const title = name || " ";
 
             const titleNode = fragment.querySelector?.(".marker__popup-title");
@@ -437,6 +444,19 @@
                     addressEl.hidden = false;
                     const valueEl = addressEl.querySelector(".popup-address-value");
                     if (valueEl) valueEl.textContent = fullAddress;
+                }
+            }
+
+            if (linkUrl) {
+                const linkEl = fragment.querySelector?.(".popup-link");
+                if (linkEl) {
+                    linkEl.hidden = false;
+                    const linkValueEl = linkEl.querySelector(".popup-link-value");
+                    if (linkValueEl) {
+                        linkValueEl.href = linkUrl;
+                        linkValueEl.target = "_blank";
+                        linkValueEl.rel = "noopener noreferrer";
+                    }
                 }
             }
 
@@ -462,11 +482,10 @@
             if (!coordinates || !Array.isArray(coordinates) || !popup || !map) return;
 
             closePopup();
-
             currentPopup = new popup({
                 coordinates,
                 draggable: false,
-                offset: 55,
+                offset: properties?.offset || 5,
                 show: true,
                 content: () => createPopupContent(properties)
             });
@@ -609,18 +628,16 @@
 
             geoJson.features.forEach(feature => {
                 const features = processFeature(feature);
-                features.forEach(f => {
-                    if (f) map.addChild(f);
-                });
+                features.forEach(f => f && map.addChild(f));
             });
         }
 
         async function loadDataFiles() {
             const [points, pointsRegion, polygons, style] = await Promise.all([
-                loadJson(CONFIG.DATA_URLS.points),
-                loadJson(CONFIG.DATA_URLS.pointsRegion),
-                loadJson(CONFIG.DATA_URLS.polygons),
-                loadJson(CONFIG.DATA_URLS.style)
+                loadJson(resolveUrl(CONFIG.DATA_URLS.points)),
+                loadJson(resolveUrl(CONFIG.DATA_URLS.pointsRegion)),
+                loadJson(resolveUrl(CONFIG.DATA_URLS.polygons)),
+                loadJson(resolveUrl(CONFIG.DATA_URLS.style))
             ]);
 
             const mainPoints = points?.type === "FeatureCollection"
@@ -644,26 +661,14 @@
         }
 
         function getGeoJsonBounds(geoJson) {
-            const coordinates = geoJson?.features
-                ?.map(feature => feature?.geometry?.coordinates)
-                ?.filter(coords => Array.isArray(coords) && coords.length === 2)
-                ?.filter(([lng, lat]) => Number.isFinite(lng) && Number.isFinite(lat));
+            if (!geoJson) return null;
 
-            if (!coordinates?.length) return null;
+            const [minLng, minLat, maxLng, maxLat] = turf.bbox(geoJson);
 
-            const initialBounds = [Infinity, -Infinity, Infinity, -Infinity];
-
-            const [minLng, maxLng, minLat, maxLat] = coordinates.reduce(
-                ([minLng, maxLng, minLat, maxLat], [lng, lat]) => [
-                    Math.min(minLng, lng),
-                    Math.max(maxLng, lng),
-                    Math.min(minLat, lat),
-                    Math.max(maxLat, lat)
-                ],
-                initialBounds
-            );
-
-            return [[minLng, minLat], [maxLng, maxLat]];
+            return [
+                [minLng, minLat],
+                [maxLng, maxLat]
+            ];
         }
 
         function fitBounds(bounds, duration = 400) {
@@ -673,7 +678,7 @@
             });
         }
 
-        function setupZoomListener() {
+        function addZoomListener() {
             if (!map || !ymaps3?.YMapListener) return;
             let lastZoom = map.zoom ?? null;
 
@@ -705,43 +710,16 @@
             return `${baseUrl}?${query}`;
         }
 
+
         function loadYMaps(config = {}) {
-            if (window.ymaps3?.ready) return Promise.resolve(window.ymaps3);
-            if (ymapsLoading) return ymapsLoading;
-
-            const handleScriptLoad = (resolve) => () => {
-                const readyPromise = window.ymaps3?.ready
-                    ? window.ymaps3.ready.then(() => window.ymaps3)
-                    : Promise.resolve(window.ymaps3);
-
-                readyPromise.then(resolve);
-            };
-
-            const existingScript = document.getElementById(CONFIG.YMAPS_SCRIPT_ID);
-            if (existingScript) {
-                ymapsLoading = new Promise((resolve, reject) => {
-                    existingScript.addEventListener("load", handleScriptLoad(resolve), { once: true });
-                    existingScript.addEventListener("error", reject, { once: true });
-                });
-                return ymapsLoading;
-            }
-
-            const script = document.createElement("script");
-            script.id = CONFIG.YMAPS_SCRIPT_ID;
-            script.async = true;
-            script.defer = true;
-            script.src = buildYMapsSrc(config);
-
-            ymapsLoading = new Promise((resolve, reject) => {
-                script.addEventListener("load", handleScriptLoad(resolve), { once: true });
-                script.addEventListener("error", reject, { once: true });
+            const src = buildYMapsSrc(config);
+            return loadScript(src, {
+                id: 'yandex-maps-script',
+                globalVar: 'ymaps3'
             });
-
-            document.head.appendChild(script);
-            return ymapsLoading;
         }
 
-        async function initializeMap() {
+        async function onReadyMap() {
             const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapControls } = ymaps3;
 
             const {
@@ -754,7 +732,7 @@
             YMapZoomControl = importedZoomControl;
             YMapGeolocationControl = importedGeolocationControl;
 
-            const container = document.getElementById("maps");
+            const container = document.getElementById(CONFIG.MAP_CONTAINER_ID);
             map = new YMap(container, mapOptions);
 
             await loadDataFiles();
@@ -769,22 +747,85 @@
             addGeoJsonFeatures(dataPoints);
             addGeoJsonFeatures(dataPolygons);
 
-            fitBounds(getGeoJsonBounds(dataPoints));
-            setupZoomListener();
+            fitBounds(getGeoJsonBounds(dataPolygons));
+            addZoomListener();
+
         }
 
-        function onInitMap() {
-            loadYMaps(CONFIG.YMAPS_CONFIG)
-                .then(() => ymaps3.ready)
-                .then(() => {
-                    ymaps3.import.registerCdn(
-                        'https://cdn.jsdelivr.net/npm/{package}',
-                        ['@yandex/ymaps3-default-ui-theme@latest']
-                    );
-                    return initializeMap();
-                })
-                .catch(error => console.error("Error initializing maps:", error));
+        async function onInitMap() {
+            try {
+                const ymaps = await loadYMaps(CONFIG.YMAPS_CONFIG);
+                await ymaps.ready;
+                ymaps.import.registerCdn(
+                    'https://cdn.jsdelivr.net/npm/{package}',
+                    ['@yandex/ymaps3-default-ui-theme@latest']
+                );
+
+                const turfPromise = loadScript(
+                    'https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js',
+                    {
+                        id: 'turf-js',
+                        globalVar: 'turf'
+                    }
+                );
+
+                await onReadyMap();
+                await turfPromise;
+
+            } catch (error) {
+                console.error('Error initializing maps:', error);
+            }
         }
+
+
+        function loadScript(src, options = {}) {
+            const {
+                id = `script-${Math.random().toString(36).substr(2, 9)}`,
+                async = true,
+                defer = true,
+                globalVar
+            } = options;
+
+            if (globalVar && window[globalVar]) {
+                return Promise.resolve(window[globalVar]);
+            }
+
+            if (loadScript.promises[src]) {
+                return loadScript.promises[src];
+            }
+
+            const existing = document.getElementById(id);
+            if (existing) {
+                loadScript.promises[src] = new Promise((resolve, reject) => {
+                    existing.addEventListener('load', () => resolve(globalVar ? window[globalVar] : null));
+                    existing.addEventListener('error', reject);
+                });
+                return loadScript.promises[src];
+            }
+
+            const script = document.createElement('script');
+            script.id = id;
+            script.async = async;
+            script.defer = defer;
+            script.src = src;
+
+            const promise = new Promise((resolve, reject) => {
+                script.onload = () => {
+                    if (globalVar && window[globalVar]) {
+                        resolve(window[globalVar]);
+                    } else {
+                        resolve(null);
+                    }
+                };
+                script.onerror = reject;
+            });
+
+            loadScript.promises[src] = promise;
+            document.head.appendChild(script);
+            return promise;
+        }
+
+        loadScript.promises = {};
 
         document.addEventListener("DOMContentLoaded", onInitMap);
     </script>

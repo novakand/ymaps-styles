@@ -6,11 +6,16 @@
       "properties": {
         "id": 1,
         "name": "Рязанская область",
-        "iconUrl": "assets/icons/62.svg"
+        "iconUrl": "assets/icons/62.svg",
+        "iconSize": 38,
+        "offset": 50
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [40.600, 54.400]
+        "coordinates": [
+          40.600,
+          54.400
+        ]
       }
     },
     {
@@ -18,11 +23,16 @@
       "properties": {
         "id": 2,
         "name": "Смоленская область",
-       "iconUrl": "assets/icons/67.svg"
+        "iconUrl": "assets/icons/67.svg",
+        "iconSize": 38,
+        "offset": 50
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [33.000, 55.000]
+        "coordinates": [
+          33.000,
+          55.000
+        ]
       }
     },
     {
@@ -30,11 +40,16 @@
       "properties": {
         "id": 3,
         "name": "Тамбовская область",
-       "iconUrl": "assets/icons/68.svg"
+        "iconUrl": "assets/icons/68.svg",
+        "iconSize": 38,
+        "offset": 50
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [41.45306, 52.72000]
+        "coordinates": [
+          41.45306,
+          52.72000
+        ]
       }
     }
   ]

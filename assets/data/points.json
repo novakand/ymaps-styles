@@ -1,0 +1,62 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "id": 1,
+                "name": " АО «Рязанский свинокомплекс»",
+                "fullAddress": "Рязанская область, Рязанский район, п. Искра",
+                "iconUrl": "assets/icons/point.svg",
+                 "linkUrl": "https://sk-panorama.com/objects/",
+                "iconSize": 38,
+                "offset": 50
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    39.891999,
+                    54.445544
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "id": 2,
+                "name": "АО «Агрокомплекс «Тамбовский»",
+                "fullAddress": "Тамбовская область, Тамбовский р-н., с. Горелое",
+                "iconUrl": "assets/icons/point.svg",
+                "linkUrl": "https://sk-panorama.com/objects/",
+                "iconSize": 38,
+                "offset": 50
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    41.497935,
+                    52.920688
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "id": 3,
+                "name": "ЗАО «Агропромышленная фирма «Наша житница»",
+                "fullAddress": "Смоленская область, Гагаринский р-н.",
+                "iconUrl": "assets/icons/point.svg",
+                 "linkUrl": "https://sk-panorama.com/objects/",
+                "iconSize": 38,
+                "offset": 50
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.986739,
+                    55.610372
+                ]
+            }
+        }
+    ]
+}
