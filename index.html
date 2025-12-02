@@ -260,7 +260,12 @@
                 }
 
                 if (window.location.hostname.includes('github.io')) {
-                   return '';
+
+                    const pathParts = window.location.pathname.split('/').filter(Boolean);
+                    if (pathParts.length > 0) {
+                        return '/' + pathParts[0];
+                    }
+                    return '';
                 }
 
                 return '';
