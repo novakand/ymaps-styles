@@ -244,9 +244,7 @@
                 const prefix = base ? base.replace(/\/$/, '') + '/' : '';
 
                 return {
-                    points: `${prefix}assets/data/points.json`,
-                    pointsRegion: `${prefix}assets/data/points-region.json`,
-                    polygons: `${prefix}assets/data/region.json`,
+                    points: `${prefix}assets/data/point-contacts.json`,
                     style: `${prefix}assets/data/style.json`
                 };
             },
@@ -599,8 +597,6 @@
         async function loadDataFiles() {
             const [points, pointsRegion, polygons, style] = await Promise.all([
                 loadJson(resolveUrl(CONFIG.DATA_URLS.points)),
-                loadJson(resolveUrl(CONFIG.DATA_URLS.pointsRegion)),
-                loadJson(resolveUrl(CONFIG.DATA_URLS.polygons)),
                 loadJson(resolveUrl(CONFIG.DATA_URLS.style))
             ]);
 

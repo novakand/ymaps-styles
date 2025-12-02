@@ -1,0 +1,26 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "id": 1,
+                "name": "Строительная компания «Панорама»",
+                "fullAddress": "390 044, г. Рязань, Народный бульвар, д. 15",
+                "iconUrl": "assets/icons/point.svg",
+                "iconSize": 38,
+                "linkUrl": null,
+                "linkText": null,
+                "offset": 50
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    39.655472,
+                    54.640133
+                ]
+            }
+        }
+      
+    ]
+}
