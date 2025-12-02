@@ -259,6 +259,9 @@
                     return window.MAP_BASE_URL;
                 }
 
+                if (window.location.hostname.includes('github.io')) {
+                    return '/ymaps-styles';
+                }
                 return '';
             })(),
 
