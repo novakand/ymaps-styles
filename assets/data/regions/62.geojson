@@ -7,7 +7,7 @@
         "region": "Рязанская обл.",
         "code": "62",
         "region_code_source": "Рязанская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",

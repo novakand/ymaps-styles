@@ -7,7 +7,7 @@
         "region": "Тамбовская обл.",
         "code": "68",
         "region_code_source": "Тамбовская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",

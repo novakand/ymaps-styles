@@ -51,6 +51,53 @@
           52.72000
         ]
       }
+    },
+      {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "name": "Владимирская область",
+        "iconUrl": "assets/icons/33.svg",
+        "iconSize": 38,
+        "offset": 50
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.08, 40.62
+        ]
+      }
+    },
+      {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "name": "Московская область",
+        "iconUrl": "assets/icons/50.svg",
+        "iconSize": 38,
+        "offset": 50
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.44, 37.62
+        ]
+      }
+    },   {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "name": "Тульская область",
+        "iconUrl": "assets/icons/71.svg",
+        "iconSize": 38,
+        "offset": 50
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.10, 37.60
+        ]
+      }
     }
   ]
 }

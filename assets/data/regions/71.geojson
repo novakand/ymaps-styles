@@ -7,7 +7,7 @@
         "region": "Тульская обл.",
         "code": "71",
         "region_code_source": "Тульская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",

@@ -7,7 +7,7 @@
         "region": "Владимирская обл.",
         "code": "33",
         "region_code_source": "Владимирская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",

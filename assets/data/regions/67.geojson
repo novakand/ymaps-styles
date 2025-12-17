@@ -7,7 +7,7 @@
         "region": "Смоленская обл.",
         "code": "67",
         "region_code_source": "Смоленская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",

@@ -7,7 +7,7 @@
         "region": "Нижегородская обл.",
         "code": "52",
         "region_code_source": "Нижегородская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",

@@ -7,7 +7,7 @@
         "region": "Московская обл.",
         "code": "50",
         "region_code_source": "Московская область",
-        "visible": false,
+        "visible": true,
         "fillColor": "#273b63",
         "fillOpacity": 0.5,
         "strokeColor": "#ffffff",
