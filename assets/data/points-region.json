@@ -52,7 +52,7 @@
         ]
       }
     },
-      {
+    {
       "type": "Feature",
       "properties": {
         "id": 3,
@@ -64,11 +64,12 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          56.08, 40.62
+          56.08,
+          40.62
         ]
       }
     },
-      {
+    {
       "type": "Feature",
       "properties": {
         "id": 3,
@@ -80,10 +81,12 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          55.44, 37.62
+          55.44,
+          37.62
         ]
       }
-    },   {
+    },
+    {
       "type": "Feature",
       "properties": {
         "id": 3,
@@ -95,7 +98,23 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          54.10, 37.60
+          54.10,
+          37.60
+        ]
+      }
+    },  {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "name": "Нижегородская область",
+        "iconUrl": "assets/icons/52.svg",
+        "iconSize": 38,
+        "offset": 50
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.20, 43.85
         ]
       }
     }
