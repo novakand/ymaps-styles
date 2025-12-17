@@ -64,8 +64,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          56.08,
-          40.62
+           40.62,56.08
+         
         ]
       }
     },
@@ -81,8 +81,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          55.44,
-          37.62
+          37.62,55.44
+          
         ]
       }
     },
@@ -98,11 +98,12 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          54.10,
-          37.60
+           37.60,54.10
+         
         ]
       }
-    },  {
+    }, 
+     {
       "type": "Feature",
       "properties": {
         "id": 7,
@@ -114,7 +115,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          56.20, 43.85
+          43.85,56.20
         ]
       }
     }
