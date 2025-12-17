@@ -55,7 +55,7 @@
     {
       "type": "Feature",
       "properties": {
-        "id": 3,
+        "id": 4,
         "name": "Владимирская область",
         "iconUrl": "assets/icons/33.svg",
         "iconSize": 38,
@@ -72,7 +72,7 @@
     {
       "type": "Feature",
       "properties": {
-        "id": 3,
+        "id": 5,
         "name": "Московская область",
         "iconUrl": "assets/icons/50.svg",
         "iconSize": 38,
@@ -89,7 +89,7 @@
     {
       "type": "Feature",
       "properties": {
-        "id": 3,
+        "id": 6,
         "name": "Тульская область",
         "iconUrl": "assets/icons/71.svg",
         "iconSize": 38,
@@ -105,7 +105,7 @@
     },  {
       "type": "Feature",
       "properties": {
-        "id": 3,
+        "id": 7,
         "name": "Нижегородская область",
         "iconUrl": "assets/icons/52.svg",
         "iconSize": 38,
